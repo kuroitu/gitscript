@@ -13,6 +13,7 @@ GitScriptプロジェクトの開発に関するドキュメントです。
 ## 開発環境のセットアップ
 
 ### 前提条件
+
 - Node.js 18.0.0以上
 - npm または yarn
 - Git
@@ -20,22 +21,26 @@ GitScriptプロジェクトの開発に関するドキュメントです。
 ### セットアップ手順
 
 1. リポジトリをクローン
+
 ```bash
 git clone https://github.com/kuroitu/gitscript.git
 cd gitscript
 ```
 
 2. 依存関係をインストール
+
 ```bash
 npm install
 ```
 
 3. 開発サーバーを起動
+
 ```bash
 npm run dev
 ```
 
 4. テストを実行
+
 ```bash
 npm test
 ```
@@ -73,6 +78,7 @@ gitscript/
 ## コマンド一覧
 
 ### 開発
+
 ```bash
 npm run dev          # 開発モードでビルド
 npm run build        # 本番用ビルド
@@ -80,6 +86,7 @@ npm run preview      # ビルド結果のプレビュー
 ```
 
 ### テスト
+
 ```bash
 npm test             # テスト実行
 npm run test:watch   # ウォッチモードでテスト
@@ -88,6 +95,7 @@ npm run test:coverage # カバレッジ付きテスト
 ```
 
 ### コード品質
+
 ```bash
 npm run lint         # リンター実行
 npm run lint:fix     # リンター自動修正

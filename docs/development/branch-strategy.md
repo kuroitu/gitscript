@@ -11,6 +11,7 @@ GitScriptプロジェクトで使用するブランチ戦略と開発ワーク�
 ### メインブランチ
 
 #### `main`
+
 - **目的**: 本番環境用の安定版
 - **保護**: 直接プッシュ禁止、PR経由のみ
 - **状態**: 常にデプロイ可能な状態を維持
@@ -19,14 +20,16 @@ GitScriptプロジェクトで使用するブランチ戦略と開発ワーク�
 ### 機能ブランチ
 
 #### `feature/*`
+
 - **目的**: 新機能の開発
 - **命名規則**: `feature/機能名`
-- **例**: 
+- **例**:
   - `feature/object-delta-compression`
   - `feature/plugin-system`
   - `feature/performance-optimization`
 
 #### `fix/*`
+
 - **目的**: バグ修正
 - **命名規則**: `fix/バグ修正名`
 - **例**:
@@ -35,6 +38,7 @@ GitScriptプロジェクトで使用するブランチ戦略と開発ワーク�
   - `fix/serialization-error`
 
 #### `docs/*`
+
 - **目的**: ドキュメントの更新
 - **命名規則**: `docs/ドキュメント名`
 - **例**:
@@ -43,6 +47,7 @@ GitScriptプロジェクトで使用するブランチ戦略と開発ワーク�
   - `docs/contributing-guide`
 
 #### `refactor/*`
+
 - **目的**: リファクタリング
 - **命名規則**: `refactor/リファクタリング名`
 - **例**:
@@ -51,6 +56,7 @@ GitScriptプロジェクトで使用するブランチ戦略と開発ワーク�
   - `refactor/type-definitions`
 
 #### `chore/*`
+
 - **目的**: ビルド設定、依存関係の更新など
 - **命名規則**: `chore/作業名`
 - **例**:
@@ -111,6 +117,7 @@ git push origin feature/新機能名
 ## コミットメッセージ規則
 
 ### 形式
+
 ```
 <type>(<scope>): <description>
 
@@ -120,6 +127,7 @@ git push origin feature/新機能名
 ```
 
 ### タイプ
+
 - `feat`: 新機能
 - `fix`: バグ修正
 - `docs`: ドキュメント更新
@@ -129,6 +137,7 @@ git push origin feature/新機能名
 - `chore`: ビルド設定、依存関係の更新
 
 ### 例
+
 ```bash
 git commit -m "feat(hash): SHA-1計算機能を追加"
 git commit -m "fix(serialization): 循環参照エラーを修正"
@@ -139,57 +148,72 @@ git commit -m "test(utils): 型ガード関数のテストを追加"
 ## プルリクエストテンプレート
 
 ### 機能追加用テンプレート
+
 ```markdown
 ## 概要
+
 このPRで実装する機能の概要を記述してください。
 
 ## 変更内容
+
 - [ ] 変更点1
 - [ ] 変更点2
 - [ ] 変更点3
 
 ## 関連Issue
+
 Closes #123
 
 ## テスト
+
 - [ ] 単体テストを追加
 - [ ] 統合テストを追加
 - [ ] 既存のテストが通ることを確認
 
 ## 破壊的変更
+
 - [ ] 破壊的変更なし
 - [ ] 破壊的変更あり（詳細を記述）
 
 ## レビューポイント
+
 レビュー時に特に注意してほしい点があれば記述してください。
 ```
 
 ### バグ修正用テンプレート
+
 ```markdown
 ## 概要
+
 修正するバグの概要を記述してください。
 
 ## 問題
+
 発生していた問題の詳細を記述してください。
 
 ## 解決方法
+
 どのように問題を解決したかを記述してください。
 
 ## 関連Issue
+
 Fixes #123
 
 ## テスト
+
 - [ ] バグ再現テストを追加
 - [ ] 修正後のテストを追加
 - [ ] 既存のテストが通ることを確認
 
 ## 影響範囲
+
 この修正が他の機能に与える影響を記述してください。
 ```
 
 ## ブランチ保護ルール
 
 ### mainブランチの保護設定
+
 - **Require pull request reviews before merging**: 有効
 - **Required number of reviewers**: 1名以上
 - **Dismiss stale reviews when new commits are pushed**: 有効
@@ -198,6 +222,7 @@ Fixes #123
 - **Restrict pushes that create files**: 有効
 
 ### 必須ステータスチェック
+
 - テストの実行
 - リンターの実行
 - ビルドの成功
@@ -205,6 +230,7 @@ Fixes #123
 ## 緊急時の対応
 
 ### ホットフィックス
+
 緊急のバグ修正が必要な場合：
 
 ```bash
@@ -221,6 +247,7 @@ git push origin hotfix/緊急修正名
 ```
 
 ### ロールバック
+
 問題が発生した場合：
 
 ```bash
@@ -235,17 +262,20 @@ git push --force-with-lease origin main
 ## ベストプラクティス
 
 ### ブランチ管理
+
 - ブランチ名は分かりやすく、目的が明確であること
 - 1つのブランチには1つの機能・修正のみ
 - 定期的にmainブランチから最新の変更を取得
 - 不要になったブランチは削除
 
 ### コミット管理
+
 - 小さく、論理的な単位でコミット
 - コミットメッセージは明確で分かりやすく
 - 関連する変更は同じコミットに含める
 
 ### プルリクエスト管理
+
 - 小さく、レビューしやすいサイズに保つ
 - 適切な説明とコンテキストを提供
 - レビュアーの負担を考慮する
@@ -253,6 +283,7 @@ git push --force-with-lease origin main
 ## ツールと設定
 
 ### 推奨Git設定
+
 ```bash
 # ブランチ名の自動補完
 git config --global branch.autosetupmerge always
@@ -266,6 +297,7 @@ git config --global alias.pr '!f() { git push -u origin $(git branch --show-curr
 ```
 
 ### GitHub CLIの活用
+
 ```bash
 # プルリクエストの作成
 gh pr create --title "機能名" --body "説明"
