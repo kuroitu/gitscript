@@ -44,7 +44,7 @@ jobs:
     - name: Check for unused dependencies
       run: |
         echo "Checking for unused dependencies..."
-        npx depcheck --ignores="@types/*,vitest,eslint,prettier,typescript,@vitest/coverage-v8,@vitest/ui" --ignore-patterns="@tests/*"
+        npx depcheck --ignores="@types/*,vitest,eslint,prettier,typescript,@vitest/coverage-v8,@vitest/ui,@tests/*" --ignore-dirs=tests
 
     - name: Check bundle size
       run: |
