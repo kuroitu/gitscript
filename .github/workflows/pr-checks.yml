@@ -98,11 +98,15 @@ jobs:
       run: |
         echo "Checking build artifacts..."
         ls -la dist/
-        if [ ! -f "dist/index.js" ]; then
-          echo "::error::Build failed - dist/index.js not found"
+        if [ ! -f "dist/gitscript.es.js" ]; then
+          echo "::error::Build failed - dist/gitscript.es.js not found"
           exit 1
         fi
-        if [ ! -f "dist/index.d.ts" ]; then
-          echo "::error::Build failed - dist/index.d.ts not found"
+        if [ ! -f "dist/gitscript.cjs.js" ]; then
+          echo "::error::Build failed - dist/gitscript.cjs.js not found"
+          exit 1
+        fi
+        if [ ! -f "dist/gitscript.umd.js" ]; then
+          echo "::error::Build failed - dist/gitscript.umd.js not found"
           exit 1
         fi
