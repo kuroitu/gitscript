@@ -6,6 +6,14 @@
  */
 
 import { GitScriptError } from '@/types/Errors';
+import { 
+    SerializationFormat, 
+    SerializationOptions, 
+    DeserializationOptions, 
+    SerializationResult, 
+    DeserializationResult 
+} from './types';
+import { detectDataType } from './DataTypeDetector';
 
 /**
  * シリアライゼーション関連のエラー
@@ -28,11 +36,209 @@ export class SerializationError extends GitScriptError {
  */
 export function stringifyCompact(obj: unknown): string {
     try {
-        return JSON.stringify(obj, null, 0);
+        const result = JSON.stringify(obj, null, 0);
+        // JSON.stringifyがundefinedを返す場合（例: undefined, Symbol）は"null"として扱う
+        return result === undefined ? 'null' : result;
     } catch (error) {
         throw new SerializationError(
             `Failed to stringify object: ${error instanceof Error ? error.message : 'Unknown error'}`,
             error instanceof Error ? error : undefined
         );
+    }
+}
+
+/**
+ * オブジェクトをJSON文字列にシリアライズする
+ * @param obj シリアライズするオブジェクト
+ * @param options シリアライゼーションオプション
+ * @returns シリアライゼーション結果
+ * @throws SerializationError シリアライズに失敗した場合
+ */
+export function serialize(obj: unknown, options: SerializationOptions = {}): SerializationResult {
+    const startTime = performance.now();
+    
+    try {
+        const format = options.format || SerializationFormat.compact;
+        const typeInfo = detectDataType(obj);
+        
+        let data: string;
+        
+        switch (format) {
+            case SerializationFormat.compact:
+                data = stringifyCompact(obj);
+                break;
+            case SerializationFormat.pretty:
+                data = stringifyPretty(obj, options.indent || 2);
+                break;
+            case SerializationFormat.json:
+            default:
+                data = stringifyWithOptions(obj, options);
+                break;
+        }
+        
+        const duration = performance.now() - startTime;
+        
+        return {
+            data,
+            format,
+            typeInfo,
+            duration
+        };
+    } catch (error) {
+        throw new SerializationError(
+            `Failed to serialize object: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            error instanceof Error ? error : undefined
+        );
+    }
+}
+
+/**
+ * JSON文字列をオブジェクトにデシリアライズする
+ * @param data デシリアライズするJSON文字列
+ * @param options デシリアライゼーションオプション
+ * @returns デシリアライゼーション結果
+ * @throws SerializationError デシリアライズに失敗した場合
+ */
+export function deserialize<T = unknown>(data: string, options: DeserializationOptions = {}): DeserializationResult<T> {
+    const startTime = performance.now();
+    
+    try {
+        const obj = JSON.parse(data, options.reviver) as T;
+        const typeInfo = detectDataType(obj);
+        const duration = performance.now() - startTime;
+        
+        return {
+            data: obj,
+            typeInfo,
+            duration
+        };
+    } catch (error) {
+        throw new SerializationError(
+            `Failed to deserialize data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            error instanceof Error ? error : undefined
+        );
+    }
+}
+
+/**
+ * オブジェクトを整形されたJSON文字列にシリアライズする
+ * @param obj シリアライズするオブジェクト
+ * @param indent インデントのスペース数
+ * @returns 整形されたJSON文字列
+ */
+function stringifyPretty(obj: unknown, indent: number): string {
+    try {
+        const result = JSON.stringify(obj, null, indent);
+        return result === undefined ? 'null' : result;
+    } catch (error) {
+        throw new SerializationError(
+            `Failed to stringify object with pretty format: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            error instanceof Error ? error : undefined
+        );
+    }
+}
+
+/**
+ * オプション付きでオブジェクトをJSON文字列にシリアライズする
+ * @param obj シリアライズするオブジェクト
+ * @param options シリアライゼーションオプション
+ * @returns JSON文字列
+ */
+function stringifyWithOptions(obj: unknown, options: SerializationOptions): string {
+    try {
+        const replacer = createReplacer(options);
+        const result = JSON.stringify(obj, replacer, options.indent);
+        return result === undefined ? 'null' : result;
+    } catch (error) {
+        throw new SerializationError(
+            `Failed to stringify object with options: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            error instanceof Error ? error : undefined
+        );
+    }
+}
+
+/**
+ * リプレーサー関数を作成する
+ * @param options シリアライゼーションオプション
+ * @returns リプレーサー関数
+ */
+function createReplacer(options: SerializationOptions): (key: string, value: unknown) => unknown {
+    return (key: string, value: unknown): unknown => {
+        // カスタムリプレーサーが指定されている場合はそれを使用
+        if (options.replacer) {
+            const customResult = options.replacer(key, value);
+            if (customResult !== undefined) {
+                return customResult;
+            }
+        }
+        
+        // 特殊な型の処理
+        if (typeof value === 'function') {
+            return handleFunction(value, options);
+        }
+        
+        if (typeof value === 'symbol') {
+            return handleSymbol(value, options);
+        }
+        
+        if (value === undefined) {
+            return handleUndefined(value, options);
+        }
+        
+        return value;
+    };
+}
+
+/**
+ * 関数の処理
+ * @param value 関数値
+ * @param options シリアライゼーションオプション
+ * @returns 処理された値
+ */
+function handleFunction(value: Function, options: SerializationOptions): unknown {
+    switch (options.functionHandling) {
+        case 'error':
+            throw new SerializationError('Function values cannot be serialized');
+        case 'replace':
+            return '[Function]';
+        case 'ignore':
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * Symbolの処理
+ * @param value Symbol値
+ * @param options シリアライゼーションオプション
+ * @returns 処理された値
+ */
+function handleSymbol(value: symbol, options: SerializationOptions): unknown {
+    switch (options.symbolHandling) {
+        case 'error':
+            throw new SerializationError('Symbol values cannot be serialized');
+        case 'replace':
+            return '[Symbol]';
+        case 'ignore':
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * undefinedの処理
+ * @param value undefined値
+ * @param options シリアライゼーションオプション
+ * @returns 処理された値
+ */
+function handleUndefined(value: undefined, options: SerializationOptions): unknown {
+    switch (options.undefinedHandling) {
+        case 'error':
+            throw new SerializationError('Undefined values cannot be serialized');
+        case 'replace':
+            return null;
+        case 'ignore':
+        default:
+            return undefined;
     }
 }
