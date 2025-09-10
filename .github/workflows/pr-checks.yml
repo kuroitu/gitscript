@@ -1,0 +1,112 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Validate PR title
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        types: |
+          feat
+          fix
+          docs
+          style
+          refactor
+          test
+          chore
+        requireScope: false
+        disallowScopes: |
+          wip
+          temp
+
+    - name: Check for TODO/FIXME comments
+      run: |
+        echo "Checking for TODO/FIXME comments..."
+        if grep -r "TODO\|FIXME" src/ --include="*.ts" --include="*.js"; then
+          echo "::warning::Found TODO/FIXME comments in the code"
+        fi
+
+    - name: Check for console.log statements
+      run: |
+        echo "Checking for console.log statements..."
+        if grep -r "console\.log" src/ --include="*.ts" --include="*.js"; then
+          echo "::warning::Found console.log statements in the code"
+        fi
+
+    - name: Run ESLint
+      run: npm run lint
+
+    - name: Run TypeScript type check
+      run: npx tsc --noEmit
+
+    - name: Run tests
+      run: npm test
+
+    - name: Check test coverage
+      run: npm run test:coverage
+
+    - name: Comment PR with coverage
+      uses: romeovs/lcov-reporter-action@v0.3.1
+      if: always()
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        lcov-file: ./coverage/lcov.info
+        delete-old-comments: true
+
+  build-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build project
+      run: npm run build
+
+    - name: Check build artifacts
+      run: |
+        echo "Checking build artifacts..."
+        ls -la dist/
+        if [ ! -f "dist/gitscript.es.js" ]; then
+          echo "::error::Build failed - dist/gitscript.es.js not found"
+          exit 1
+        fi
+        if [ ! -f "dist/gitscript.cjs.js" ]; then
+          echo "::error::Build failed - dist/gitscript.cjs.js not found"
+          exit 1
+        fi
+        if [ ! -f "dist/gitscript.umd.js" ]; then
+          echo "::error::Build failed - dist/gitscript.umd.js not found"
+          exit 1
+        fi
