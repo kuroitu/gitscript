@@ -65,7 +65,11 @@ export class StagingAreaError extends GitScriptError {
  * 型エラー
  */
 export class TypeError extends GitScriptError {
-  constructor(expectedType: string, actualValue: unknown, parameterName?: string) {
+  constructor(
+    expectedType: string,
+    actualValue: unknown,
+    parameterName?: string,
+  ) {
     const message = parameterName
       ? `Expected ${expectedType} for parameter '${parameterName}', but got ${typeof actualValue}`
       : `Expected ${expectedType}, but got ${typeof actualValue}`;
