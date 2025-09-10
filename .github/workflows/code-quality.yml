@@ -1,0 +1,68 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run ESLint with detailed output
+      run: |
+        echo "Running ESLint..."
+        npm run lint -- --format=json --output-file=eslint-report.json || true
+        npm run lint
+
+    - name: Upload ESLint results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: eslint-results
+        path: eslint-report.json
+
+    - name: Run TypeScript strict type checking
+      run: |
+        echo "Running TypeScript type check..."
+        npx tsc --noEmit --strict
+
+    - name: Check for unused dependencies
+      run: |
+        echo "Checking for unused dependencies..."
+        npx depcheck --ignores="@types/*,vitest,eslint,prettier,typescript"
+
+    - name: Check bundle size
+      run: |
+        echo "Building project..."
+        npm run build
+        echo "Checking bundle size..."
+        ls -la dist/
+
+    - name: Run complexity analysis
+      run: |
+        echo "Installing complexity analysis tools..."
+        npm install -g complexity-report
+        echo "Running complexity analysis..."
+        npx complexity-report src/ --format=json > complexity-report.json || true
+
+    - name: Upload complexity report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: complexity-report
+        path: complexity-report.json
