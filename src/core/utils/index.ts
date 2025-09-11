@@ -25,5 +25,6 @@ export {
 export {
   validateArray,
   validateBuffer,
+  validateRange,
   validateString,
 } from '@/core/utils/validators';

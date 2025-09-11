@@ -1,6 +1,6 @@
 import { isValidHash, isValidShortHash } from '@/core/hash/HashValidator';
-import { validateRange } from '@/core/utils/validators';
-import { InvalidHashError } from '@/types/Errors';
+import { validateRange } from '@/core/utils';
+import { InvalidHashError } from '@/types';
 
 /**
  * 2つのハッシュを比較する

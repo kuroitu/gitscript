@@ -5,8 +5,10 @@
  * 例外ハンドリングを行うラッパー層
  */
 
-import { GitScriptError } from '@/types/Errors';
+import { isBuffer } from '@/core/utils';
+import { GitScriptError } from '@/types';
 import { createHash as nodeCreateHash } from 'crypto';
+import { isNativeError } from 'util/types';
 
 /**
  * 暗号化関連のエラー
@@ -35,7 +37,7 @@ export function calculateSha1(
   try {
     const hash = nodeCreateHash('sha1');
 
-    if (Buffer.isBuffer(data)) {
+    if (isBuffer(data)) {
       hash.update(data);
     } else {
       hash.update(data, encoding);
@@ -44,8 +46,8 @@ export function calculateSha1(
     return hash.digest('hex');
   } catch (error) {
     throw new CryptoError(
-      `Failed to calculate SHA-1 hash: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to calculate SHA-1 hash: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }
@@ -69,7 +71,7 @@ export function calculateSha1FromMultiple(
     for (let i = 0; i < dataList.length; i++) {
       const data = dataList[i];
 
-      if (Buffer.isBuffer(data)) {
+      if (isBuffer(data)) {
         hash.update(data);
       } else {
         hash.update(data, encoding);
@@ -84,8 +86,8 @@ export function calculateSha1FromMultiple(
     return hash.digest('hex');
   } catch (error) {
     throw new CryptoError(
-      `Failed to calculate SHA-1 hash from multiple data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to calculate SHA-1 hash from multiple data: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }

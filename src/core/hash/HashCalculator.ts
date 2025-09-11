@@ -1,13 +1,12 @@
+import { calculateSha1, calculateSha1FromMultiple } from '@/core/crypto';
+import { stringifyCompact } from '@/core/serialization';
 import {
-  calculateSha1,
-  calculateSha1FromMultiple,
-} from '@/core/crypto/CryptoProvider';
-import { stringifyCompact } from '@/core/serialization/JsonProvider';
-import {
+  isNull,
+  isUndefined,
   validateArray,
   validateBuffer,
   validateString,
-} from '@/core/utils/validators';
+} from '@/core/utils';
 
 /**
  * 文字列からSHA-1ハッシュを計算する
@@ -27,14 +26,14 @@ export function calculateHash(content: string): string {
 export function calculateHashFromObject(obj: unknown): string {
   // nullやundefinedを適切に処理
   let content: string;
-  if (obj === null) {
+  if (isNull(obj)) {
     content = 'null';
-  } else if (obj === undefined) {
+  } else if (isUndefined(obj)) {
     content = 'undefined';
   } else {
     const serialized = stringifyCompact(obj);
     // JSON.stringifyがundefinedを返した場合（関数など）の処理
-    content = serialized === undefined ? '[Function]' : serialized;
+    content = isUndefined(serialized) ? '[Function]' : serialized;
   }
   return calculateHash(content);
 }
