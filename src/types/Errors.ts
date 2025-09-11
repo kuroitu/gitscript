@@ -87,3 +87,16 @@ export class ArgumentError extends GitScriptError {
     this.name = 'ArgumentError';
   }
 }
+
+/**
+ * データ型検出エラー
+ */
+export class DataTypeDetectionError extends GitScriptError {
+  constructor(message: string, originalError?: Error) {
+    const fullMessage = originalError
+      ? `Failed to detect data type: ${message} (${originalError.message})`
+      : `Failed to detect data type: ${message}`;
+    super(fullMessage, 'DATA_TYPE_DETECTION_ERROR');
+    this.name = 'DataTypeDetectionError';
+  }
+}

@@ -9,14 +9,14 @@ import { InvalidHashError } from '@/types/Errors';
  * @returns ハッシュが等しいかどうか
  */
 export function compareHashes(hash1: string, hash2: string): boolean {
-    if (!isValidHash(hash1)) {
-        throw new InvalidHashError(`Invalid hash format: ${hash1}`);
-    }
-    if (!isValidHash(hash2)) {
-        throw new InvalidHashError(`Invalid hash format: ${hash2}`);
-    }
+  if (!isValidHash(hash1)) {
+    throw new InvalidHashError(`Invalid hash format: ${hash1}`);
+  }
+  if (!isValidHash(hash2)) {
+    throw new InvalidHashError(`Invalid hash format: ${hash2}`);
+  }
 
-    return hash1.toLowerCase() === hash2.toLowerCase();
+  return hash1.toLowerCase() === hash2.toLowerCase();
 }
 
 /**
@@ -26,13 +26,13 @@ export function compareHashes(hash1: string, hash2: string): boolean {
  * @returns 短縮されたハッシュ
  */
 export function shortenHash(hash: string, length = 7): string {
-    if (!isValidHash(hash)) {
-        throw new InvalidHashError(`Invalid hash format: ${hash}`);
-    }
+  if (!isValidHash(hash)) {
+    throw new InvalidHashError(`Invalid hash format: ${hash}`);
+  }
 
-    validateRange(length, 4, 40, 'length');
+  validateRange(length, 4, 40, 'length');
 
-    return hash.substring(0, length);
+  return hash.substring(0, length);
 }
 
 /**
@@ -41,24 +41,27 @@ export function shortenHash(hash: string, length = 7): string {
  * @param candidates 候補となる完全なハッシュの配列
  * @returns マッチする完全なハッシュ、見つからない場合はnull
  */
-export function expandShortHash(shortHash: string, candidates: string[]): string | null {
-    if (!isValidShortHash(shortHash)) {
-        return null;
-    }
-
-    const lowerShortHash = shortHash.toLowerCase();
-
-    for (const candidate of candidates) {
-        if (!isValidHash(candidate)) {
-            continue;
-        }
-
-        if (candidate.toLowerCase().startsWith(lowerShortHash)) {
-            return candidate;
-        }
-    }
-
+export function expandShortHash(
+  shortHash: string,
+  candidates: string[],
+): string | null {
+  if (!isValidShortHash(shortHash)) {
     return null;
+  }
+
+  const lowerShortHash = shortHash.toLowerCase();
+
+  for (const candidate of candidates) {
+    if (!isValidHash(candidate)) {
+      continue;
+    }
+
+    if (candidate.toLowerCase().startsWith(lowerShortHash)) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -67,26 +70,26 @@ export function expandShortHash(shortHash: string, candidates: string[]): string
  * @returns 衝突しているハッシュのペア、衝突がない場合はnull
  */
 export function detectHashCollision(hashes: string[]): [string, string] | null {
-    const seen = new Set<string>();
+  const seen = new Set<string>();
 
-    for (const hash of hashes) {
-        if (!isValidHash(hash)) {
-            continue;
-        }
-
-        const lowerHash = hash.toLowerCase();
-        if (seen.has(lowerHash)) {
-            // 衝突を発見
-            for (const seenHash of seen) {
-                if (seenHash === lowerHash) {
-                    return [seenHash, hash];
-                }
-            }
-        }
-        seen.add(lowerHash);
+  for (const hash of hashes) {
+    if (!isValidHash(hash)) {
+      continue;
     }
 
-    return null;
+    const lowerHash = hash.toLowerCase();
+    if (seen.has(lowerHash)) {
+      // 衝突を発見
+      for (const seenHash of seen) {
+        if (seenHash === lowerHash) {
+          return [seenHash, hash];
+        }
+      }
+    }
+    seen.add(lowerHash);
+  }
+
+  return null;
 }
 
 /**
@@ -95,9 +98,9 @@ export function detectHashCollision(hashes: string[]): [string, string] | null {
  * @returns ソートされたハッシュの配列
  */
 export function sortHashes(hashes: string[]): string[] {
-    return hashes
-        .filter((hash) => isValidHash(hash))
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  return hashes
+    .filter((hash) => isValidHash(hash))
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 }
 
 /**
@@ -106,22 +109,22 @@ export function sortHashes(hashes: string[]): string[] {
  * @returns 重複が除去されたハッシュの配列
  */
 export function removeDuplicateHashes(hashes: string[]): string[] {
-    const seen = new Set<string>();
-    const result: string[] = [];
+  const seen = new Set<string>();
+  const result: string[] = [];
 
-    for (const hash of hashes) {
-        if (!isValidHash(hash)) {
-            continue;
-        }
-
-        const lowerHash = hash.toLowerCase();
-        if (!seen.has(lowerHash)) {
-            seen.add(lowerHash);
-            result.push(hash);
-        }
+  for (const hash of hashes) {
+    if (!isValidHash(hash)) {
+      continue;
     }
 
-    return result;
+    const lowerHash = hash.toLowerCase();
+    if (!seen.has(lowerHash)) {
+      seen.add(lowerHash);
+      result.push(hash);
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -131,17 +134,17 @@ export function removeDuplicateHashes(hashes: string[]): string[] {
  * @returns 見つかった場合はインデックス、見つからない場合は-1
  */
 export function findHashIndex(hashes: string[], target: string): number {
-    if (!isValidHash(target)) {
-        return -1;
-    }
-
-    const lowerTarget = target.toLowerCase();
-
-    for (let i = 0; i < hashes.length; i++) {
-        if (isValidHash(hashes[i]) && hashes[i].toLowerCase() === lowerTarget) {
-            return i;
-        }
-    }
-
+  if (!isValidHash(target)) {
     return -1;
+  }
+
+  const lowerTarget = target.toLowerCase();
+
+  for (let i = 0; i < hashes.length; i++) {
+    if (isValidHash(hashes[i]) && hashes[i].toLowerCase() === lowerTarget) {
+      return i;
+    }
+  }
+
+  return -1;
 }

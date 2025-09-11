@@ -20,9 +20,9 @@ GitScript では、JavaScript のオブジェクト、配列、その他のデ�
 type PrimitiveType = string | number | boolean | null | undefined;
 
 interface PrimitiveDelta {
-    type: "primitive";
-    operation: "set" | "delete";
-    value?: PrimitiveType;
+  type: 'primitive';
+  operation: 'set' | 'delete';
+  value?: PrimitiveType;
 }
 ```
 
@@ -30,14 +30,14 @@ interface PrimitiveDelta {
 
 ```typescript
 interface ObjectDelta {
-    type: "object";
-    operations: Map<string, PropertyDelta>;
+  type: 'object';
+  operations: Map<string, PropertyDelta>;
 }
 
 interface PropertyDelta {
-    operation: "set" | "delete" | "modify";
-    value?: any;
-    delta?: DataDelta;
+  operation: 'set' | 'delete' | 'modify';
+  value?: any;
+  delta?: DataDelta;
 }
 ```
 
@@ -45,16 +45,16 @@ interface PropertyDelta {
 
 ```typescript
 interface ArrayDelta {
-    type: "array";
-    operations: ArrayOperation[];
+  type: 'array';
+  operations: ArrayOperation[];
 }
 
 interface ArrayOperation {
-    type: "insert" | "delete" | "modify" | "move";
-    index: number;
-    value?: any;
-    delta?: DataDelta;
-    newIndex?: number; // move の場合
+  type: 'insert' | 'delete' | 'modify' | 'move';
+  index: number;
+  value?: any;
+  delta?: DataDelta;
+  newIndex?: number; // move の場合
 }
 ```
 
@@ -62,25 +62,25 @@ interface ArrayOperation {
 
 ```typescript
 interface SetDelta {
-    type: "set";
-    operations: SetOperation[];
+  type: 'set';
+  operations: SetOperation[];
 }
 
 interface SetOperation {
-    operation: "add" | "delete";
-    value: any;
+  operation: 'add' | 'delete';
+  value: any;
 }
 
 interface MapDelta {
-    type: "map";
-    operations: MapOperation[];
+  type: 'map';
+  operations: MapOperation[];
 }
 
 interface MapOperation {
-    operation: "set" | "delete";
-    key: any;
-    value?: any;
-    delta?: DataDelta;
+  operation: 'set' | 'delete';
+  key: any;
+  value?: any;
+  delta?: DataDelta;
 }
 ```
 
@@ -88,18 +88,18 @@ interface MapOperation {
 
 ```typescript
 interface DataDelta {
-    type: "primitive" | "object" | "array" | "set" | "map";
-    data: PrimitiveDelta | ObjectDelta | ArrayDelta | SetDelta | MapDelta;
-    timestamp: Date;
-    version: number;
+  type: 'primitive' | 'object' | 'array' | 'set' | 'map';
+  data: PrimitiveDelta | ObjectDelta | ArrayDelta | SetDelta | MapDelta;
+  timestamp: Date;
+  version: number;
 }
 
 interface ObjectSnapshot {
-    hash: string;
-    data: any;
-    type: string;
-    timestamp: Date;
-    version: number;
+  hash: string;
+  data: any;
+  type: string;
+  timestamp: Date;
+  version: number;
 }
 ```
 
@@ -109,19 +109,19 @@ interface ObjectSnapshot {
 
 ```typescript
 interface ObjectDeltaCalculator {
-    calculateDelta(base: any, target: any): DataDelta | null;
+  calculateDelta(base: any, target: any): DataDelta | null;
 }
 ```
 
 **責務**:
 
--   2 つのオブジェクト間の差分を計算
--   型の変更を検出
--   各データ型に応じた差分アルゴリズムの適用
+- 2 つのオブジェクト間の差分を計算
+- 型の変更を検出
+- 各データ型に応じた差分アルゴリズムの適用
 
 **主要メソッド**:
 
--   `calculateDelta()`: ベースオブジェクトとターゲットオブジェクトの差分を計算
+- `calculateDelta()`: ベースオブジェクトとターゲットオブジェクトの差分を計算
 
 ## 差分適用エンジン
 
@@ -129,19 +129,19 @@ interface ObjectDeltaCalculator {
 
 ```typescript
 interface ObjectDeltaApplier {
-    applyDelta(base: any, delta: DataDelta): any;
+  applyDelta(base: any, delta: DataDelta): any;
 }
 ```
 
 **責務**:
 
--   差分をベースオブジェクトに適用
--   各データ型に応じた適用ロジックの実行
--   ネストしたオブジェクトの再帰的適用
+- 差分をベースオブジェクトに適用
+- 各データ型に応じた適用ロジックの実行
+- ネストしたオブジェクトの再帰的適用
 
 **主要メソッド**:
 
--   `applyDelta()`: ベースオブジェクトに差分を適用して新しいオブジェクトを生成
+- `applyDelta()`: ベースオブジェクトに差分を適用して新しいオブジェクトを生成
 
 ## オブジェクト管理システム
 
@@ -149,28 +149,28 @@ interface ObjectDeltaApplier {
 
 ```typescript
 interface ObjectRepository {
-    saveObject(id: string, data: any): string;
-    updateObject(id: string, newData: any): string;
-    getObject(id: string): any;
-    getObjectAtVersion(id: string, version: number): any;
-    getObjectHistory(id: string): ObjectSnapshot[];
+  saveObject(id: string, data: any): string;
+  updateObject(id: string, newData: any): string;
+  getObject(id: string): any;
+  getObjectAtVersion(id: string, version: number): any;
+  getObjectHistory(id: string): ObjectSnapshot[];
 }
 ```
 
 **責務**:
 
--   オブジェクトの保存・取得・更新
--   バージョン管理
--   履歴の追跡
--   差分の管理
+- オブジェクトの保存・取得・更新
+- バージョン管理
+- 履歴の追跡
+- 差分の管理
 
 **主要メソッド**:
 
--   `saveObject()`: 新しいオブジェクトを保存
--   `updateObject()`: オブジェクトを更新（差分として保存）
--   `getObject()`: 最新バージョンのオブジェクトを取得
--   `getObjectAtVersion()`: 特定バージョンのオブジェクトを取得
--   `getObjectHistory()`: オブジェクトの変更履歴を取得
+- `saveObject()`: 新しいオブジェクトを保存
+- `updateObject()`: オブジェクトを更新（差分として保存）
+- `getObject()`: 最新バージョンのオブジェクトを取得
+- `getObjectAtVersion()`: 特定バージョンのオブジェクトを取得
+- `getObjectHistory()`: オブジェクトの変更履歴を取得
 
 ## 使用例
 
@@ -179,21 +179,25 @@ interface ObjectRepository {
 const repo = new ObjectRepository();
 
 // 初期オブジェクトの保存
-const userData = { name: "John Doe", age: 30, hobbies: ["reading", "coding"] };
-const hash1 = repo.saveObject("user-1", userData);
+const userData = { name: 'John Doe', age: 30, hobbies: ['reading', 'coding'] };
+const hash1 = repo.saveObject('user-1', userData);
 
 // オブジェクトの更新（差分として保存）
-const updatedUserData = { name: "John Doe", age: 31, hobbies: ["reading", "coding", "gaming"] };
-const hash2 = repo.updateObject("user-1", updatedUserData);
+const updatedUserData = {
+  name: 'John Doe',
+  age: 31,
+  hobbies: ['reading', 'coding', 'gaming'],
+};
+const hash2 = repo.updateObject('user-1', updatedUserData);
 
 // オブジェクトの取得
 const currentData = repo.getObject(hash2);
 
 // 履歴の取得
-const history = repo.getObjectHistory("user-1");
+const history = repo.getObjectHistory('user-1');
 
 // 特定バージョンの取得
-const version1Data = repo.getObjectAtVersion("user-1", 1);
+const version1Data = repo.getObjectAtVersion('user-1', 1);
 ```
 
 ## 実装順序
@@ -206,7 +210,7 @@ const version1Data = repo.getObjectAtVersion("user-1", 1);
 
 ## 設計の特徴
 
--   **型安全性**: TypeScript の型システムを活用
--   **効率性**: 変更部分のみを保存
--   **拡張性**: 新しいデータ型の追加が容易
--   **互換性**: 既存の JavaScript データ構造との親和性
+- **型安全性**: TypeScript の型システムを活用
+- **効率性**: 変更部分のみを保存
+- **拡張性**: 新しいデータ型の追加が容易
+- **互換性**: 既存の JavaScript データ構造との親和性

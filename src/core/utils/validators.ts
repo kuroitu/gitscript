@@ -3,7 +3,7 @@ import { ArgumentError, TypeError } from '@/types/Errors';
 
 /**
  * 型バリデーション用のユーティリティ関数
- * 
+ *
  * 型チェックとエラー投げを組み合わせた関数群
  */
 
@@ -14,11 +14,14 @@ import { ArgumentError, TypeError } from '@/types/Errors';
  * @returns 文字列として型アサーションされた値
  * @throws TypeError 値が文字列でない場合
  */
-export function validateString(value: unknown, parameterName = 'value'): string {
-    if (!isString(value)) {
-        throw new TypeError('string', value, parameterName);
-    }
-    return value;
+export function validateString(
+  value: unknown,
+  parameterName = 'value',
+): string {
+  if (!isString(value)) {
+    throw new TypeError('string', value, parameterName);
+  }
+  return value;
 }
 
 /**
@@ -29,10 +32,10 @@ export function validateString(value: unknown, parameterName = 'value'): string 
  * @throws TypeError 値が配列でない場合
  */
 export function validateArray<T>(value: unknown, parameterName = 'value'): T[] {
-    if (!isArray(value)) {
-        throw new TypeError('array', value, parameterName);
-    }
-    return value as T[];
+  if (!isArray(value)) {
+    throw new TypeError('array', value, parameterName);
+  }
+  return value as T[];
 }
 
 /**
@@ -42,11 +45,14 @@ export function validateArray<T>(value: unknown, parameterName = 'value'): T[] {
  * @returns Bufferとして型アサーションされた値
  * @throws TypeError 値がBufferでない場合
  */
-export function validateBuffer(value: unknown, parameterName = 'value'): Buffer {
-    if (!isBuffer(value)) {
-        throw new TypeError('Buffer', value, parameterName);
-    }
-    return value;
+export function validateBuffer(
+  value: unknown,
+  parameterName = 'value',
+): Buffer {
+  if (!isBuffer(value)) {
+    throw new TypeError('Buffer', value, parameterName);
+  }
+  return value;
 }
 
 /**
@@ -59,13 +65,13 @@ export function validateBuffer(value: unknown, parameterName = 'value'): Buffer 
  * @throws ArgumentError 値が範囲外の場合
  */
 export function validateRange(
-    value: number,
-    min: number,
-    max: number,
-    parameterName = 'value'
+  value: number,
+  min: number,
+  max: number,
+  parameterName = 'value',
 ): number {
-    if (value < min || value > max) {
-        throw new ArgumentError(parameterName, `must be between ${min} and ${max}`);
-    }
-    return value;
+  if (value < min || value > max) {
+    throw new ArgumentError(parameterName, `must be between ${min} and ${max}`);
+  }
+  return value;
 }

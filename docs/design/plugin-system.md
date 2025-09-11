@@ -18,18 +18,18 @@ GitScript は、ユーザーが独自の機能を追加できるプラグイン�
 
 ```typescript
 interface StoragePlugin {
-    name: string;
-    version: string;
+  name: string;
+  version: string;
 
-    // オブジェクトの保存・取得
-    saveObject(hash: string, content: string): Promise<void>;
-    getObject(hash: string): Promise<string | null>;
-    hasObject(hash: string): Promise<boolean>;
+  // オブジェクトの保存・取得
+  saveObject(hash: string, content: string): Promise<void>;
+  getObject(hash: string): Promise<string | null>;
+  hasObject(hash: string): Promise<boolean>;
 
-    // 参照の管理
-    saveRef(name: string, hash: string): Promise<void>;
-    getRef(name: string): Promise<string | null>;
-    listRefs(): Promise<Map<string, string>>;
+  // 参照の管理
+  saveRef(name: string, hash: string): Promise<void>;
+  getRef(name: string): Promise<string | null>;
+  listRefs(): Promise<Map<string, string>>;
 }
 ```
 
@@ -37,15 +37,15 @@ interface StoragePlugin {
 
 ```typescript
 interface HashPlugin {
-    name: string;
-    algorithm: string;
+  name: string;
+  algorithm: string;
 
-    // ハッシュの計算
-    calculate(content: string): string;
-    validate(hash: string): boolean;
+  // ハッシュの計算
+  calculate(content: string): string;
+  validate(hash: string): boolean;
 
-    // ハッシュの比較
-    equals(hash1: string, hash2: string): boolean;
+  // ハッシュの比較
+  equals(hash1: string, hash2: string): boolean;
 }
 ```
 
@@ -53,15 +53,15 @@ interface HashPlugin {
 
 ```typescript
 interface SerializationPlugin {
-    name: string;
-    format: string;
+  name: string;
+  format: string;
 
-    // オブジェクトのシリアライゼーション
-    serialize<T>(obj: T): string;
-    deserialize<T>(data: string, type: new () => T): T;
+  // オブジェクトのシリアライゼーション
+  serialize<T>(obj: T): string;
+  deserialize<T>(data: string, type: new () => T): T;
 
-    // 形式の検証
-    validate(data: string): boolean;
+  // 形式の検証
+  validate(data: string): boolean;
 }
 ```
 
@@ -69,30 +69,33 @@ interface SerializationPlugin {
 
 ```typescript
 interface CommandPlugin {
-    name: string;
-    commands: Command[];
+  name: string;
+  commands: Command[];
 
-    // コマンドの実行
-    execute(command: string, args: string[]): Promise<CommandResult>;
+  // コマンドの実行
+  execute(command: string, args: string[]): Promise<CommandResult>;
 
-    // ヘルプ情報
-    getHelp(command: string): string;
+  // ヘルプ情報
+  getHelp(command: string): string;
 }
 
 interface Command {
-    name: string;
-    description: string;
-    usage: string;
-    options: CommandOption[];
-    handler: (args: string[], options: Map<string, any>) => Promise<CommandResult>;
+  name: string;
+  description: string;
+  usage: string;
+  options: CommandOption[];
+  handler: (
+    args: string[],
+    options: Map<string, any>,
+  ) => Promise<CommandResult>;
 }
 
 interface CommandOption {
-    name: string;
-    type: "string" | "boolean" | "number";
-    required: boolean;
-    description: string;
-    defaultValue?: any;
+  name: string;
+  type: 'string' | 'boolean' | 'number';
+  required: boolean;
+  description: string;
+  defaultValue?: any;
 }
 ```
 
@@ -100,20 +103,20 @@ interface CommandOption {
 
 ```typescript
 interface HookPlugin {
-    name: string;
-    hooks: Hook[];
+  name: string;
+  hooks: Hook[];
 
-    // フックの登録
-    registerHook(hook: Hook): void;
+  // フックの登録
+  registerHook(hook: Hook): void;
 
-    // フックの実行
-    executeHook(event: string, context: any): Promise<void>;
+  // フックの実行
+  executeHook(event: string, context: any): Promise<void>;
 }
 
 interface Hook {
-    event: string;
-    handler: (context: any) => Promise<void>;
-    priority: number;
+  event: string;
+  handler: (context: any) => Promise<void>;
+  priority: number;
 }
 ```
 
@@ -121,40 +124,40 @@ interface Hook {
 
 ```typescript
 interface PluginManager {
-    // プラグインの管理
-    registerPlugin(plugin: Plugin): void;
-    unregisterPlugin(name: string): void;
-    getPlugin<T extends Plugin>(name: string): T | null;
-    listPlugins(): Plugin[];
+  // プラグインの管理
+  registerPlugin(plugin: Plugin): void;
+  unregisterPlugin(name: string): void;
+  getPlugin<T extends Plugin>(name: string): T | null;
+  listPlugins(): Plugin[];
 
-    // プラグインの初期化・終了
-    initialize(): Promise<void>;
-    shutdown(): Promise<void>;
+  // プラグインの初期化・終了
+  initialize(): Promise<void>;
+  shutdown(): Promise<void>;
 
-    // プラグインの設定
-    configurePlugin(name: string, config: any): void;
-    getPluginConfig(name: string): any;
+  // プラグインの設定
+  configurePlugin(name: string, config: any): void;
+  getPluginConfig(name: string): any;
 }
 
 interface Plugin {
-    name: string;
-    version: string;
-    dependencies: string[];
+  name: string;
+  version: string;
+  dependencies: string[];
 
-    // ライフサイクル
-    initialize(context: PluginContext): Promise<void>;
-    shutdown(): Promise<void>;
+  // ライフサイクル
+  initialize(context: PluginContext): Promise<void>;
+  shutdown(): Promise<void>;
 
-    // 設定
-    configure(config: any): void;
-    getConfig(): any;
+  // 設定
+  configure(config: any): void;
+  getConfig(): any;
 }
 
 interface PluginContext {
-    repository: Repository;
-    config: GitConfig;
-    eventBus: EventBus;
-    logger: Logger;
+  repository: Repository;
+  config: GitConfig;
+  eventBus: EventBus;
+  logger: Logger;
 }
 ```
 
@@ -162,38 +165,38 @@ interface PluginContext {
 
 ### 1. ストレージ拡張
 
--   ローカルファイルシステム
--   データベース（SQLite、PostgreSQL 等）
--   クラウドストレージ（S3、Azure Blob 等）
--   分散ストレージ（IPFS 等）
+- ローカルファイルシステム
+- データベース（SQLite、PostgreSQL 等）
+- クラウドストレージ（S3、Azure Blob 等）
+- 分散ストレージ（IPFS 等）
 
 ### 2. ハッシュアルゴリズム拡張
 
--   SHA-1（Git 互換）
--   SHA-256（より安全）
--   BLAKE3（高速）
--   カスタムハッシュ
+- SHA-1（Git 互換）
+- SHA-256（より安全）
+- BLAKE3（高速）
+- カスタムハッシュ
 
 ### 3. シリアライゼーション拡張
 
--   JSON（デフォルト）
--   MessagePack（効率的）
--   Protocol Buffers（型安全）
--   カスタム形式
+- JSON（デフォルト）
+- MessagePack（効率的）
+- Protocol Buffers（型安全）
+- カスタム形式
 
 ### 4. コマンド拡張
 
--   基本的な Git コマンド
--   カスタムコマンド
--   外部ツール連携
--   ワークフロー自動化
+- 基本的な Git コマンド
+- カスタムコマンド
+- 外部ツール連携
+- ワークフロー自動化
 
 ### 5. フック拡張
 
--   コミット前フック
--   プッシュ前フック
--   マージ前フック
--   カスタムイベント
+- コミット前フック
+- プッシュ前フック
+- マージ前フック
+- カスタムイベント
 
 ## 使用例
 
@@ -221,26 +224,26 @@ await pluginManager.initialize();
 
 ```typescript
 interface PluginConfig {
-    [pluginName: string]: {
-        enabled: boolean;
-        config: any;
-        dependencies: string[];
-    };
+  [pluginName: string]: {
+    enabled: boolean;
+    config: any;
+    dependencies: string[];
+  };
 }
 
 interface GitScriptConfig extends GitConfig {
-    plugins: PluginConfig;
-    storage: {
-        type: string;
-        config: any;
-    };
-    hash: {
-        algorithm: string;
-        config: any;
-    };
-    serialization: {
-        format: string;
-        config: any;
-    };
+  plugins: PluginConfig;
+  storage: {
+    type: string;
+    config: any;
+  };
+  hash: {
+    algorithm: string;
+    config: any;
+  };
+  serialization: {
+    format: string;
+    config: any;
+  };
 }
 ```

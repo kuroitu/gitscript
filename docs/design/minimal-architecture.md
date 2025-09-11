@@ -52,15 +52,15 @@ graph TB
 
 ### 1. 基本操作（必須）
 
--   `init` - オブジェクトリポジトリの初期化
--   `add` - オブジェクトのステージング
--   `commit` - 変更のコミット
--   `status` - 状態の確認
+- `init` - オブジェクトリポジトリの初期化
+- `add` - オブジェクトのステージング
+- `commit` - 変更のコミット
+- `status` - 状態の確認
 
 ### 2. 履歴操作（基本）
 
--   `log` - コミット履歴の表示
--   `show` - 特定コミットの詳細表示
+- `log` - コミット履歴の表示
+- `show` - 特定コミットの詳細表示
 
 ## データ構造
 
@@ -68,11 +68,11 @@ graph TB
 
 ```typescript
 interface ObjectSnapshot {
-    hash: string; // オブジェクトのハッシュ
-    data: any; // オブジェクトのデータ
-    type: string; // データ型（object, array, set, map, primitive）
-    timestamp: Date; // 作成日時
-    version: number; // バージョン番号
+  hash: string; // オブジェクトのハッシュ
+  data: any; // オブジェクトのデータ
+  type: string; // データ型（object, array, set, map, primitive）
+  timestamp: Date; // 作成日時
+  version: number; // バージョン番号
 }
 ```
 
@@ -80,20 +80,20 @@ interface ObjectSnapshot {
 
 ```typescript
 interface DataDelta {
-    type: "primitive" | "object" | "array" | "set" | "map";
-    data: PrimitiveDelta | ObjectDelta | ArrayDelta | SetDelta | MapDelta;
-    timestamp: Date;
-    version: number;
+  type: 'primitive' | 'object' | 'array' | 'set' | 'map';
+  data: PrimitiveDelta | ObjectDelta | ArrayDelta | SetDelta | MapDelta;
+  timestamp: Date;
+  version: number;
 }
 
 interface ObjectDelta {
-    type: "object";
-    operations: Map<string, PropertyDelta>;
+  type: 'object';
+  operations: Map<string, PropertyDelta>;
 }
 
 interface ArrayDelta {
-    type: "array";
-    operations: ArrayOperation[];
+  type: 'array';
+  operations: ArrayOperation[];
 }
 ```
 
@@ -101,11 +101,11 @@ interface ArrayDelta {
 
 ```typescript
 interface Commit {
-    hash: string; // SHA-1ハッシュ
-    message: string; // コミットメッセージ
-    timestamp: Date; // 作成日時
-    author: Author; // 作成者
-    objects: string[]; // 変更されたオブジェクトのハッシュ
+  hash: string; // SHA-1ハッシュ
+  message: string; // コミットメッセージ
+  timestamp: Date; // 作成日時
+  author: Author; // 作成者
+  objects: string[]; // 変更されたオブジェクトのハッシュ
 }
 ```
 
@@ -158,64 +158,64 @@ interface Commit {
 
 ### 1. 機能制限
 
--   ブランチ機能は含まない
--   マージ機能は含まない
--   リモートリポジトリ機能は含まない
--   高度なフック機能は含まない
--   プラグインシステムは含まない
+- ブランチ機能は含まない
+- マージ機能は含まない
+- リモートリポジトリ機能は含まない
+- 高度なフック機能は含まない
+- プラグインシステムは含まない
 
 ### 2. パフォーマンス制限
 
--   大きなファイルの最適化は含まない
--   分散処理は含まない
--   高度な圧縮は含まない
+- 大きなファイルの最適化は含まない
+- 分散処理は含まない
+- 高度な圧縮は含まない
 
 ### 3. セキュリティ制限
 
--   暗号化機能は含まない
--   認証機能は含まない
--   アクセス制御は含まない
+- 暗号化機能は含まない
+- 認証機能は含まない
+- アクセス制御は含まない
 
 ## 拡張性の考慮
 
 ### 1. インターフェース設計
 
--   将来的な拡張を考慮したインターフェース設計
--   実装の交換可能性を保つ
+- 将来的な拡張を考慮したインターフェース設計
+- 実装の交換可能性を保つ
 
 ### 2. 設定システム
 
--   基本的な設定機能のみ
--   将来的な拡張を考慮した構造
+- 基本的な設定機能のみ
+- 将来的な拡張を考慮した構造
 
 ### 3. エラーハンドリング
 
--   基本的なエラーハンドリング
--   将来的な拡張を考慮した構造
+- 基本的なエラーハンドリング
+- 将来的な拡張を考慮した構造
 
 ## 使用例
 
 ```typescript
 // オブジェクトリポジトリの初期化
-const repo = await GitScript.init("/path/to/repo");
+const repo = await GitScript.init('/path/to/repo');
 
 // オブジェクトのステージング
 const userData = {
-    name: "John Doe",
-    age: 30,
-    hobbies: ["reading", "coding"],
-    profile: {
-        bio: "Software developer",
-        location: "Tokyo",
-    },
+  name: 'John Doe',
+  age: 30,
+  hobbies: ['reading', 'coding'],
+  profile: {
+    bio: 'Software developer',
+    location: 'Tokyo',
+  },
 };
 
-await repo.add("user-1", userData);
+await repo.add('user-1', userData);
 
 // 変更のコミット
-const commitHash = await repo.commit("Initial commit", {
-    name: "John Doe",
-    email: "john@example.com",
+const commitHash = await repo.commit('Initial commit', {
+  name: 'John Doe',
+  email: 'john@example.com',
 });
 
 // 状態の確認
@@ -224,17 +224,17 @@ console.log(status);
 
 // オブジェクトの更新
 const updatedUserData = {
-    name: "John Doe",
-    age: 31, // 年齢を更新
-    hobbies: ["reading", "coding", "gaming"], // 趣味を追加
-    profile: {
-        bio: "Senior Software developer", // プロフィールを更新
-        location: "Tokyo",
-    },
+  name: 'John Doe',
+  age: 31, // 年齢を更新
+  hobbies: ['reading', 'coding', 'gaming'], // 趣味を追加
+  profile: {
+    bio: 'Senior Software developer', // プロフィールを更新
+    location: 'Tokyo',
+  },
 };
 
-await repo.add("user-1", updatedUserData);
-const commitHash2 = await repo.commit("Update user profile");
+await repo.add('user-1', updatedUserData);
+const commitHash2 = await repo.commit('Update user profile');
 
 // コミット履歴の表示
 const history = await repo.log();
@@ -249,21 +249,21 @@ console.log(commitDetails);
 
 ### 1. ストレージ効率
 
--   **大幅な容量削減**: オブジェクトの変更部分のみを保存
--   **履歴の圧縮**: 長い履歴でも効率的な保存
--   **重複排除**: 同じ内容のオブジェクトを共有
+- **大幅な容量削減**: オブジェクトの変更部分のみを保存
+- **履歴の圧縮**: 長い履歴でも効率的な保存
+- **重複排除**: 同じ内容のオブジェクトを共有
 
 ### 2. パフォーマンス
 
--   **高速な更新**: 差分のみを計算・保存
--   **効率的な復元**: 必要なバージョンのみを復元
--   **メモリ効率**: 必要な部分のみを読み込み
+- **高速な更新**: 差分のみを計算・保存
+- **効率的な復元**: 必要なバージョンのみを復元
+- **メモリ効率**: 必要な部分のみを読み込み
 
 ### 3. Git 概念の活用
 
--   **操作感の統一**: Git の概念との一貫性
--   **学習コストの削減**: 既存の Git 知識の活用
--   **直感的な操作**: コミット、ステージングなどの概念
+- **操作感の統一**: Git の概念との一貫性
+- **学習コストの削減**: 既存の Git 知識の活用
+- **直感的な操作**: コミット、ステージングなどの概念
 
 ## 次のステップ
 
