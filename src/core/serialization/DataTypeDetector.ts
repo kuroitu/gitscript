@@ -10,15 +10,19 @@ import {
   isArray,
   isBigInt,
   isBuffer,
+  isDate,
   isFunction,
+  isMap,
+  isNativeError,
   isNull,
   isObject,
   isPrimitive,
+  isRegExp,
+  isSet,
   isSymbol,
   isUndefined,
 } from '@/core/utils';
 import { DataTypeDetectionError } from '@/types';
-import { isDate, isMap, isNativeError, isRegExp, isSet } from 'util/types';
 
 /**
  * データ型を検出する

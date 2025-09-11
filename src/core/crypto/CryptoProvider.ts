@@ -5,10 +5,9 @@
  * 例外ハンドリングを行うラッパー層
  */
 
-import { isBuffer } from '@/core/utils';
+import { isBuffer, isNativeError } from '@/core/utils';
 import { GitScriptError } from '@/types';
 import { createHash as nodeCreateHash } from 'crypto';
-import { isNativeError } from 'util/types';
 
 /**
  * 暗号化関連のエラー

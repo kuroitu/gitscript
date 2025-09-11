@@ -14,17 +14,24 @@ import {
   FunctionHandling,
   SymbolHandling,
 } from '@/core/serialization/types';
+
+// 型の再エクスポート
+export type { DeepCopyOptions, DeepCopyResult };
 import {
   isArray,
   isBigInt,
   isBuffer,
+  isDate,
   isFunction,
+  isMap,
+  isNativeError,
   isNullOrUndefined,
   isObject,
   isPrimitive,
+  isRegExp,
+  isSet,
   isSymbol,
 } from '@/core/utils';
-import { isDate, isMap, isNativeError, isRegExp, isSet } from 'util/types';
 
 /**
  * オブジェクトの深いコピーを作成する

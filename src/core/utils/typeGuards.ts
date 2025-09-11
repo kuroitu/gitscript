@@ -106,6 +106,51 @@ export function isObject(value: unknown): value is object {
 }
 
 /**
+ * 値がネイティブエラーかどうかをチェックする
+ * @param value チェックする値
+ * @returns ネイティブエラーの場合true
+ */
+export function isNativeError(value: unknown): value is Error {
+  return value instanceof Error;
+}
+
+/**
+ * 値がDateオブジェクトかどうかをチェックする
+ * @param value チェックする値
+ * @returns Dateオブジェクトの場合true
+ */
+export function isDate(value: unknown): value is Date {
+  return value instanceof Date;
+}
+
+/**
+ * 値がMapオブジェクトかどうかをチェックする
+ * @param value チェックする値
+ * @returns Mapオブジェクトの場合true
+ */
+export function isMap(value: unknown): value is Map<unknown, unknown> {
+  return value instanceof Map;
+}
+
+/**
+ * 値がSetオブジェクトかどうかをチェックする
+ * @param value チェックする値
+ * @returns Setオブジェクトの場合true
+ */
+export function isSet(value: unknown): value is Set<unknown> {
+  return value instanceof Set;
+}
+
+/**
+ * 値がRegExpオブジェクトかどうかをチェックする
+ * @param value チェックする値
+ * @returns RegExpオブジェクトの場合true
+ */
+export function isRegExp(value: unknown): value is RegExp {
+  return value instanceof RegExp;
+}
+
+/**
  * 値が配列かどうかをチェックする
  * @param value チェックする値
  * @returns 配列の場合true

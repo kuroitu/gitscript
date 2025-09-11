@@ -16,9 +16,8 @@ import {
   SymbolHandling,
   UndefinedHandling,
 } from '@/core/serialization/types';
-import { isFunction, isSymbol, isUndefined } from '@/core/utils';
+import { isFunction, isNativeError, isSymbol, isUndefined } from '@/core/utils';
 import { GitScriptError } from '@/types';
-import { isNativeError } from 'util/types';
 
 /**
  * シリアライゼーション関連のエラー
