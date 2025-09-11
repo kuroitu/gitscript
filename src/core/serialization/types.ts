@@ -105,15 +105,57 @@ export interface DeserializationOptions {
 }
 
 /**
+ * 循環参照の処理方法
+ */
+export const CircularReferenceHandling = {
+  /** エラー */
+  error: 'error',
+  /** 置換 */
+  replace: 'replace',
+  /** 無視 */
+  ignore: 'ignore',
+} as const;
+export type CircularReferenceHandling =
+  (typeof CircularReferenceHandling)[keyof typeof CircularReferenceHandling];
+
+/**
+ * 関数の処理方法
+ */
+export const FunctionHandling = {
+  /** エラー */
+  error: 'error',
+  /** 置換 */
+  replace: 'replace',
+  /** 無視 */
+  ignore: 'ignore',
+} as const;
+export type FunctionHandling =
+  (typeof FunctionHandling)[keyof typeof FunctionHandling];
+
+/**
+ * Symbolの処理方法
+ */
+export const SymbolHandling = {
+  /** エラー */
+  error: 'error',
+  /** 置換 */
+  replace: 'replace',
+  /** 無視 */
+  ignore: 'ignore',
+} as const;
+export type SymbolHandling =
+  (typeof SymbolHandling)[keyof typeof SymbolHandling];
+
+/**
  * 深いコピーのオプション
  */
 export interface DeepCopyOptions {
   /** 循環参照の処理方法 */
-  circularReferenceHandling?: 'error' | 'replace' | 'ignore';
+  circularReferenceHandling?: CircularReferenceHandling;
   /** 関数の処理方法 */
-  functionHandling?: 'error' | 'replace' | 'ignore';
+  functionHandling?: FunctionHandling;
   /** Symbolの処理方法 */
-  symbolHandling?: 'error' | 'replace' | 'ignore';
+  symbolHandling?: SymbolHandling;
   /** カスタムコピー関数 */
   customCopier?: (value: unknown) => unknown;
 }

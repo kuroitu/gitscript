@@ -7,7 +7,13 @@
 
 import { detectDataType } from '@/core/serialization/DataTypeDetector';
 import { SerializationError } from '@/core/serialization/JsonProvider';
-import { DeepCopyOptions, DeepCopyResult } from '@/core/serialization/types';
+import {
+  CircularReferenceHandling,
+  DeepCopyOptions,
+  DeepCopyResult,
+  FunctionHandling,
+  SymbolHandling,
+} from '@/core/serialization/types';
 import {
   isArray,
   isBigInt,
@@ -32,9 +38,17 @@ export function deepCopy<T = unknown>(
 ): DeepCopyResult<T> {
   const startTime = performance.now();
 
+  // デフォルトオプションを設定
+  const defaultOptions: DeepCopyOptions = {
+    circularReferenceHandling: CircularReferenceHandling.ignore,
+    functionHandling: FunctionHandling.ignore,
+    symbolHandling: SymbolHandling.ignore,
+    ...options,
+  };
+
   try {
     const visited = new WeakMap<object, unknown>();
-    const copied = copyValue(obj, visited, options);
+    const copied = copyValue(obj, visited, defaultOptions);
     const duration = performance.now() - startTime;
 
     return {
@@ -67,11 +81,6 @@ function copyValue(
     return value;
   }
 
-  // プリミティブ型
-  if (isPrimitive(value)) {
-    return value;
-  }
-
   // BigInt
   if (isBigInt(value)) {
     return value;
@@ -80,6 +89,11 @@ function copyValue(
   // Symbol
   if (isSymbol(value)) {
     return handleSymbol(value, options);
+  }
+
+  // プリミティブ型（string, number, boolean）
+  if (isPrimitive(value)) {
+    return value;
   }
 
   // Function
@@ -133,12 +147,12 @@ function copyValue(
  * @returns 処理された値
  */
 function handleSymbol(value: symbol, options: DeepCopyOptions): unknown {
-  switch (options.symbolHandling) {
-    case 'error':
+  switch (options.symbolHandling || SymbolHandling.ignore) {
+    case SymbolHandling.error:
       throw new SerializationError('Symbol values cannot be copied');
-    case 'replace':
+    case SymbolHandling.replace:
       return '[Symbol]';
-    case 'ignore':
+    case SymbolHandling.ignore:
     default:
       return value;
   }
@@ -154,12 +168,12 @@ function handleFunction(
   value: (...args: unknown[]) => unknown,
   options: DeepCopyOptions,
 ): unknown {
-  switch (options.functionHandling) {
-    case 'error':
+  switch (options.functionHandling || FunctionHandling.ignore) {
+    case FunctionHandling.error:
       throw new SerializationError('Function values cannot be copied');
-    case 'replace':
+    case FunctionHandling.replace:
       return '[Function]';
-    case 'ignore':
+    case FunctionHandling.ignore:
     default:
       return value;
   }
@@ -268,11 +282,18 @@ function copyObject(
     return handleCircularReference(visited.get(obj), options) as object;
   }
 
-  const copied: Record<string, unknown> = {};
+  const copied: Record<string | symbol, unknown> = {};
   visited.set(obj, copied);
 
+  // 通常のプロパティをコピー
   for (const [key, value] of Object.entries(obj)) {
     copied[key] = copyValue(value, visited, options);
+  }
+
+  // シンボルプロパティをコピー
+  for (const symbolKey of Object.getOwnPropertySymbols(obj)) {
+    const value = (obj as Record<string | symbol, unknown>)[symbolKey];
+    copied[symbolKey] = copyValue(value, visited, options);
   }
 
   return copied;
@@ -288,12 +309,15 @@ function handleCircularReference(
   value: unknown,
   options: DeepCopyOptions,
 ): unknown {
-  switch (options.circularReferenceHandling) {
-    case 'error':
+  switch (
+    options.circularReferenceHandling ||
+    CircularReferenceHandling.ignore
+  ) {
+    case CircularReferenceHandling.error:
       throw new SerializationError('Circular reference detected');
-    case 'replace':
+    case CircularReferenceHandling.replace:
       return '[Circular Reference]';
-    case 'ignore':
+    case CircularReferenceHandling.ignore:
     default:
       return value;
   }
