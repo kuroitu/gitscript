@@ -5,12 +5,20 @@
  * 循環参照や特殊な型も適切に処理する
  */
 
-import { detectDataType } from './DataTypeDetector';
-import { SerializationError } from './JsonProvider';
-import { DeepCopyOptions, DeepCopyResult } from './types';
-
-// 型の再エクスポート
-export type { DeepCopyOptions, DeepCopyResult };
+import { detectDataType } from '@/core/serialization/DataTypeDetector';
+import { SerializationError } from '@/core/serialization/JsonProvider';
+import { DeepCopyOptions, DeepCopyResult } from '@/core/serialization/types';
+import {
+  isArray,
+  isBigInt,
+  isBuffer,
+  isFunction,
+  isNullOrUndefined,
+  isObject,
+  isPrimitive,
+  isSymbol,
+} from '@/core/utils';
+import { isDate, isMap, isNativeError, isRegExp, isSet } from 'util/types';
 
 /**
  * オブジェクトの深いコピーを作成する
@@ -36,8 +44,8 @@ export function deepCopy<T = unknown>(
     };
   } catch (error) {
     throw new SerializationError(
-      `Failed to deep copy object: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to deep copy object: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }
@@ -55,66 +63,62 @@ function copyValue(
   options: DeepCopyOptions,
 ): unknown {
   // null または undefined
-  if (value === null || value === undefined) {
+  if (isNullOrUndefined(value)) {
     return value;
   }
 
   // プリミティブ型
-  if (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
-  ) {
+  if (isPrimitive(value)) {
     return value;
   }
 
   // BigInt
-  if (typeof value === 'bigint') {
+  if (isBigInt(value)) {
     return value;
   }
 
   // Symbol
-  if (typeof value === 'symbol') {
+  if (isSymbol(value)) {
     return handleSymbol(value, options);
   }
 
   // Function
-  if (typeof value === 'function') {
+  if (isFunction(value)) {
     return handleFunction(value as (...args: unknown[]) => unknown, options);
   }
 
   // Buffer
-  if (Buffer.isBuffer(value)) {
+  if (isBuffer(value)) {
     return Buffer.from(value);
   }
 
   // Date
-  if (value instanceof Date) {
+  if (isDate(value)) {
     return new Date(value.getTime());
   }
 
   // RegExp
-  if (value instanceof RegExp) {
+  if (isRegExp(value)) {
     return new RegExp(value.source, value.flags);
   }
 
   // Array
-  if (Array.isArray(value)) {
+  if (isArray(value)) {
     return copyArray(value, visited, options);
   }
 
   // Set
-  if (value instanceof Set) {
+  if (isSet(value)) {
     return copySet(value, visited, options);
   }
 
   // Map
-  if (value instanceof Map) {
+  if (isMap(value)) {
     return copyMap(value, visited, options);
   }
 
   // 通常のオブジェクト
-  if (typeof value === 'object') {
+  if (isObject(value)) {
     return copyObject(value, visited, options);
   }
 

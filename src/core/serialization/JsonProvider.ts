@@ -13,7 +13,9 @@ import {
   SerializationOptions,
   SerializationResult,
 } from '@/core/serialization/types';
-import { GitScriptError } from '@/types/Errors';
+import { isFunction, isSymbol, isUndefined } from '@/core/utils';
+import { GitScriptError } from '@/types';
+import { isNativeError } from 'util/types';
 
 /**
  * シリアライゼーション関連のエラー
@@ -38,11 +40,11 @@ export function stringifyCompact(obj: unknown): string {
   try {
     const result = JSON.stringify(obj, null, 0);
     // JSON.stringifyがundefinedを返す場合（例: undefined, Symbol）は"null"として扱う
-    return result === undefined ? 'null' : result;
+    return isUndefined(result) ? 'null' : result;
   } catch (error) {
     throw new SerializationError(
-      `Failed to stringify object: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to stringify object: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }
@@ -89,8 +91,8 @@ export function serialize(
     };
   } catch (error) {
     throw new SerializationError(
-      `Failed to serialize object: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to serialize object: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }
@@ -120,8 +122,8 @@ export function deserialize<T = unknown>(
     };
   } catch (error) {
     throw new SerializationError(
-      `Failed to deserialize data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to deserialize data: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }
@@ -135,11 +137,11 @@ export function deserialize<T = unknown>(
 function stringifyPretty(obj: unknown, indent: number): string {
   try {
     const result = JSON.stringify(obj, null, indent);
-    return result === undefined ? 'null' : result;
+    return isUndefined(result) ? 'null' : result;
   } catch (error) {
     throw new SerializationError(
-      `Failed to stringify object with pretty format: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to stringify object with pretty format: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }
@@ -157,11 +159,11 @@ function stringifyWithOptions(
   try {
     const replacer = createReplacer(options);
     const result = JSON.stringify(obj, replacer, options.indent);
-    return result === undefined ? 'null' : result;
+    return isUndefined(result) ? 'null' : result;
   } catch (error) {
     throw new SerializationError(
-      `Failed to stringify object with options: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to stringify object with options: ${isNativeError(error) ? error.message : 'Unknown error'}`,
+      isNativeError(error) ? error : undefined,
     );
   }
 }
@@ -184,15 +186,15 @@ function createReplacer(
     }
 
     // 特殊な型の処理
-    if (typeof value === 'function') {
+    if (isFunction(value)) {
       return handleFunction(value as (...args: unknown[]) => unknown, options);
     }
 
-    if (typeof value === 'symbol') {
+    if (isSymbol(value)) {
       return handleSymbol(value, options);
     }
 
-    if (value === undefined) {
+    if (isUndefined(value)) {
       return handleUndefined(value, options);
     }
 
@@ -241,12 +243,12 @@ function handleSymbol(value: symbol, options: SerializationOptions): unknown {
 
 /**
  * undefinedの処理
- * @param value undefined値
+ * @param _value undefined値
  * @param options シリアライゼーションオプション
  * @returns 処理された値
  */
 function handleUndefined(
-  value: undefined,
+  _value: undefined,
   options: SerializationOptions,
 ): unknown {
   switch (options.undefinedHandling) {

@@ -7,9 +7,18 @@
 // 型ガード関数
 export {
   isArray,
+  isBigInt,
+  isBoolean,
   isBuffer,
+  isFunction,
+  isNull,
   isNullOrUndefined,
+  isNumber,
+  isObject,
+  isPrimitive,
   isString,
+  isSymbol,
+  isUndefined,
 } from '@/core/utils/typeGuards';
 
 // バリデーション関数

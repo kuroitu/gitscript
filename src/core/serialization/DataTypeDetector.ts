@@ -16,9 +16,9 @@ import {
   isPrimitive,
   isSymbol,
   isUndefined,
-} from '@/core/utils/typeGuards';
-import { DataTypeDetectionError } from '@/types/Errors';
-import { isDate, isMap, isRegExp, isSet } from 'util/types';
+} from '@/core/utils';
+import { DataTypeDetectionError } from '@/types';
+import { isDate, isMap, isNativeError, isRegExp, isSet } from 'util/types';
 
 /**
  * データ型を検出する
@@ -35,8 +35,8 @@ export function detectDataType(value: unknown): DataTypeInfo {
     };
   } catch (error) {
     throw new DataTypeDetectionError(
-      error instanceof Error ? error.message : 'Unknown error',
-      error instanceof Error ? error : undefined,
+      isNativeError(error) ? error.message : 'Unknown error',
+      isNativeError(error) ? error : undefined,
     );
   }
 }
