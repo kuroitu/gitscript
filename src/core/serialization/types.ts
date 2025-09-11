@@ -83,13 +83,13 @@ export interface SerializationOptions {
   /** インデントのスペース数（pretty形式の場合） */
   indent?: number;
   /** 循環参照の処理方法 */
-  circularReferenceHandling?: 'error' | 'replace' | 'ignore';
+  circularReferenceHandling?: CircularReferenceHandling;
   /** 関数の処理方法 */
-  functionHandling?: 'error' | 'replace' | 'ignore';
+  functionHandling?: FunctionHandling;
   /** Symbolの処理方法 */
-  symbolHandling?: 'error' | 'replace' | 'ignore';
+  symbolHandling?: SymbolHandling;
   /** undefinedの処理方法 */
-  undefinedHandling?: 'error' | 'replace' | 'ignore';
+  undefinedHandling?: UndefinedHandling;
   /** カスタムリプレーサー関数 */
   replacer?: (key: string, value: unknown) => unknown;
 }
@@ -146,6 +146,19 @@ export const SymbolHandling = {
 export type SymbolHandling =
   (typeof SymbolHandling)[keyof typeof SymbolHandling];
 
+/**
+ * undefinedの処理方法
+ */
+export const UndefinedHandling = {
+  /** エラー */
+  error: 'error',
+  /** 置換 */
+  replace: 'replace',
+  /** 無視 */
+  ignore: 'ignore',
+} as const;
+export type UndefinedHandling =
+  (typeof UndefinedHandling)[keyof typeof UndefinedHandling];
 /**
  * 深いコピーのオプション
  */

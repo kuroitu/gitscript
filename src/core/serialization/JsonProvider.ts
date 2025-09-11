@@ -9,9 +9,12 @@ import { detectDataType } from '@/core/serialization/DataTypeDetector';
 import {
   DeserializationOptions,
   DeserializationResult,
+  FunctionHandling,
   SerializationFormat,
   SerializationOptions,
   SerializationResult,
+  SymbolHandling,
+  UndefinedHandling,
 } from '@/core/serialization/types';
 import { isFunction, isSymbol, isUndefined } from '@/core/utils';
 import { GitScriptError } from '@/types';
@@ -180,7 +183,7 @@ function createReplacer(
     // カスタムリプレーサーが指定されている場合はそれを使用
     if (options.replacer) {
       const customResult = options.replacer(key, value);
-      if (customResult !== undefined) {
+      if (!isUndefined(customResult)) {
         return customResult;
       }
     }
@@ -212,12 +215,12 @@ function handleFunction(
   _value: (...args: unknown[]) => unknown,
   options: SerializationOptions,
 ): unknown {
-  switch (options.functionHandling) {
-    case 'error':
+  switch (options.functionHandling || FunctionHandling.ignore) {
+    case FunctionHandling.error:
       throw new SerializationError('Function values cannot be serialized');
-    case 'replace':
+    case FunctionHandling.replace:
       return '[Function]';
-    case 'ignore':
+    case FunctionHandling.ignore:
     default:
       return undefined;
   }
@@ -230,12 +233,12 @@ function handleFunction(
  * @returns 処理された値
  */
 function handleSymbol(value: symbol, options: SerializationOptions): unknown {
-  switch (options.symbolHandling) {
-    case 'error':
+  switch (options.symbolHandling || SymbolHandling.ignore) {
+    case SymbolHandling.error:
       throw new SerializationError('Symbol values cannot be serialized');
-    case 'replace':
+    case SymbolHandling.replace:
       return '[Symbol]';
-    case 'ignore':
+    case SymbolHandling.ignore:
     default:
       return undefined;
   }
@@ -251,12 +254,12 @@ function handleUndefined(
   _value: undefined,
   options: SerializationOptions,
 ): unknown {
-  switch (options.undefinedHandling) {
-    case 'error':
+  switch (options.undefinedHandling || UndefinedHandling.ignore) {
+    case UndefinedHandling.error:
       throw new SerializationError('Undefined values cannot be serialized');
-    case 'replace':
+    case UndefinedHandling.replace:
       return null;
-    case 'ignore':
+    case UndefinedHandling.ignore:
     default:
       return undefined;
   }
