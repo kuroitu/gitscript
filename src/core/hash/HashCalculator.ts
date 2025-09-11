@@ -1,6 +1,12 @@
-import { calculateSha1, calculateSha1FromMultiple } from '@/core/crypto/CryptoProvider';
-import { stringifyCompact } from '@/core/serialization/JsonProvider';
-import { validateArray, validateBuffer, validateString } from '@/core/utils/validators';
+import { calculateSha1, calculateSha1FromMultiple } from '@/core/crypto';
+import { stringifyCompact } from '@/core/serialization';
+import {
+  isNull,
+  isUndefined,
+  validateArray,
+  validateBuffer,
+  validateString,
+} from '@/core/utils';
 
 /**
  * 文字列からSHA-1ハッシュを計算する
@@ -8,8 +14,8 @@ import { validateArray, validateBuffer, validateString } from '@/core/utils/vali
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHash(content: string): string {
-    validateString(content, 'content');
-    return calculateSha1(content);
+  validateString(content, 'content');
+  return calculateSha1(content);
 }
 
 /**
@@ -18,18 +24,18 @@ export function calculateHash(content: string): string {
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHashFromObject(obj: unknown): string {
-    // nullやundefinedを適切に処理
-    let content: string;
-    if (obj === null) {
-        content = 'null';
-    } else if (obj === undefined) {
-        content = 'undefined';
-    } else {
-        const serialized = stringifyCompact(obj);
-        // JSON.stringifyがundefinedを返した場合（関数など）の処理
-        content = serialized === undefined ? '[Function]' : serialized;
-    }
-    return calculateHash(content);
+  // nullやundefinedを適切に処理
+  let content: string;
+  if (isNull(obj)) {
+    content = 'null';
+  } else if (isUndefined(obj)) {
+    content = 'undefined';
+  } else {
+    const serialized = stringifyCompact(obj);
+    // JSON.stringifyがundefinedを返した場合（関数など）の処理
+    content = isUndefined(serialized) ? '[Function]' : serialized;
+  }
+  return calculateHash(content);
 }
 
 /**
@@ -38,8 +44,8 @@ export function calculateHashFromObject(obj: unknown): string {
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHashFromBuffer(buffer: Buffer): string {
-    validateBuffer(buffer, 'buffer');
-    return calculateSha1(buffer);
+  validateBuffer(buffer, 'buffer');
+  return calculateSha1(buffer);
 }
 
 /**
@@ -48,6 +54,6 @@ export function calculateHashFromBuffer(buffer: Buffer): string {
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHashFromMultiple(contents: string[]): string {
-    validateArray<string>(contents, 'contents');
-    return calculateSha1FromMultiple(contents);
+  validateArray<string>(contents, 'contents');
+  return calculateSha1FromMultiple(contents);
 }

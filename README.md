@@ -8,11 +8,11 @@ GitScript は、JavaScript オブジェクト（オブジェクト、配列、Se
 
 ## 特徴
 
--   **オブジェクト履歴管理**: JavaScript オブジェクトの変更履歴を効率的に管理
--   **差分管理**: 変更部分のみを保存することでストレージ効率を最適化
--   **Git ライクな操作**: 既存の Git の概念と一貫した操作感
--   **型安全性**: TypeScript による型安全な実装
--   **ミニマム設計**: 必要最小限の機能から始めて段階的に拡張
+- **オブジェクト履歴管理**: JavaScript オブジェクトの変更履歴を効率的に管理
+- **差分管理**: 変更部分のみを保存することでストレージ効率を最適化
+- **Git ライクな操作**: 既存の Git の概念と一貫した操作感
+- **型安全性**: TypeScript による型安全な実装
+- **ミニマム設計**: 必要最小限の機能から始めて段階的に拡張
 
 ## インストール
 
@@ -23,22 +23,22 @@ npm install gitscript
 ## 基本的な使用例
 
 ```typescript
-import { GitScript } from "gitscript";
+import { GitScript } from 'gitscript';
 
 // リポジトリの初期化
-const repo = await GitScript.init("/path/to/repo");
+const repo = await GitScript.init('/path/to/repo');
 
 // オブジェクトのステージング
-await repo.add("user-1", {
-    name: "John Doe",
-    age: 30,
-    hobbies: ["reading", "coding"],
+await repo.add('user-1', {
+  name: 'John Doe',
+  age: 30,
+  hobbies: ['reading', 'coding'],
 });
 
 // コミット
-const commitHash = await repo.commit("Add user data", {
-    name: "John Doe",
-    email: "john@example.com",
+const commitHash = await repo.commit('Add user data', {
+  name: 'John Doe',
+  email: 'john@example.com',
 });
 
 // 状態の確認
@@ -56,11 +56,11 @@ console.log(details);
 
 ## 対応データ型
 
--   **オブジェクト**: ネストしたオブジェクトの変更追跡
--   **配列**: 要素の追加・削除・変更の効率的な差分計算
--   **Set**: 要素の追加・削除の追跡
--   **Map**: キー・値の変更追跡
--   **プリミティブ**: 文字列、数値、真偽値などの基本型
+- **オブジェクト**: ネストしたオブジェクトの変更追跡
+- **配列**: 要素の追加・削除・変更の効率的な差分計算
+- **Set**: 要素の追加・削除の追跡
+- **Map**: キー・値の変更追跡
+- **プリミティブ**: 文字列、数値、真偽値などの基本型
 
 ## アーキテクチャ
 
@@ -115,36 +115,36 @@ Data Layer
 
 ### 実装予定フェーズ
 
--   **Phase 1**: 基本データ構造（型定義、ハッシュ、シリアライゼーション）
--   **Phase 2**: ストレージ層（ファイルシステム、参照管理、設定）
--   **Phase 3**: オブジェクト差分管理（差分計算、適用、復元）
--   **Phase 4**: コア機能（リポジトリ、ステージング、コミット）
--   **Phase 5**: API 層（プログラム API）
+- **Phase 1**: 基本データ構造（型定義、ハッシュ、シリアライゼーション）
+- **Phase 2**: ストレージ層（ファイルシステム、参照管理、設定）
+- **Phase 3**: オブジェクト差分管理（差分計算、適用、復元）
+- **Phase 4**: コア機能（リポジトリ、ステージング、コミット）
+- **Phase 5**: API 層（プログラム API）
 
 ## 制限事項
 
 ### 現在の制限
 
--   ブランチ機能は含まない
--   マージ機能は含まない
--   リモートリポジトリ機能は含まない
--   高度なフック機能は含まない
+- ブランチ機能は含まない
+- マージ機能は含まない
+- リモートリポジトリ機能は含まない
+- 高度なフック機能は含まない
 
 ### 将来の拡張予定
 
--   プラグインシステム
--   拡張可能なインターフェース
--   高度な設定オプション
--   ブランチ・マージ機能
+- プラグインシステム
+- 拡張可能なインターフェース
+- 高度な設定オプション
+- ブランチ・マージ機能
 
 ## 設計書
 
 詳細な設計については、[docs/design/](./docs/design/) ディレクトリを参照してください。
 
--   [ミニマム構成設計](./docs/design/minimal-architecture.md)
--   [オブジェクト差分管理設計](./docs/design/object-delta-compression.md)
--   [API 設計](./docs/design/api-design.md)
--   [実装計画](./docs/design/implementation-plan.md)
+- [ミニマム構成設計](./docs/design/minimal-architecture.md)
+- [オブジェクト差分管理設計](./docs/design/object-delta-compression.md)
+- [API 設計](./docs/design/api-design.md)
+- [実装計画](./docs/design/implementation-plan.md)
 
 ## ライセンス
 
@@ -156,16 +156,16 @@ MIT License
 
 ## ロードマップ
 
--   [ ] v0.1.0: 基本的な CRUD 操作と差分管理
--   [ ] v0.2.0: パフォーマンス最適化とエラーハンドリング改善
--   [ ] v0.3.0: プラグインシステムと拡張可能なインターフェース
--   [ ] v1.0.0: ブランチ・マージ機能とリモートリポジトリ対応
+- [ ] v0.1.0: 基本的な CRUD 操作と差分管理
+- [ ] v0.2.0: パフォーマンス最適化とエラーハンドリング改善
+- [ ] v0.3.0: プラグインシステムと拡張可能なインターフェース
+- [ ] v1.0.0: ブランチ・マージ機能とリモートリポジトリ対応
 
 ## 関連プロジェクト
 
--   [Git](https://git-scm.com/) - 分散バージョン管理システム
--   [NodeGit](https://github.com/nodegit/nodegit) - Git の Node.js バインディング
--   [isomorphic-git](https://isomorphic-git.org/) - JavaScript で実装された Git
+- [Git](https://git-scm.com/) - 分散バージョン管理システム
+- [NodeGit](https://github.com/nodegit/nodegit) - Git の Node.js バインディング
+- [isomorphic-git](https://isomorphic-git.org/) - JavaScript で実装された Git
 
 ## サポート
 

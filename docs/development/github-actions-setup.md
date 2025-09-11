@@ -18,6 +18,7 @@ GitScriptプロジェクトのGitHub Actions CI/CDパイプラインの設定に
 **トリガー**: プッシュ、プルリクエスト（main/developブランチ）
 
 **実行内容**:
+
 - Node.js 18.x, 20.xでのマトリックステスト
 - ESLintによるコード品質チェック
 - Prettierによるフォーマットチェック
@@ -30,6 +31,7 @@ GitScriptプロジェクトのGitHub Actions CI/CDパイプラインの設定に
 **トリガー**: プッシュ、プルリクエスト、スケジュール（毎週月曜日）
 
 **実行内容**:
+
 - npm auditによる脆弱性チェック
 - 依存関係レビュー
 - ライセンスチェック
@@ -39,6 +41,7 @@ GitScriptプロジェクトのGitHub Actions CI/CDパイプラインの設定に
 **トリガー**: プッシュ、プルリクエスト（main/developブランチ）
 
 **実行内容**:
+
 - ESLint詳細レポート
 - TypeScript厳密型チェック
 - 未使用依存関係チェック
@@ -50,6 +53,7 @@ GitScriptプロジェクトのGitHub Actions CI/CDパイプラインの設定に
 **トリガー**: プルリクエスト（作成、更新、再オープン）
 
 **実行内容**:
+
 - セマンティックプルリクエスト検証
 - TODO/FIXMEコメントチェック
 - console.logステートメントチェック
@@ -68,6 +72,7 @@ GitHubリポジトリで以下のブランチ保護ルールを設定してく�
 4. 以下のオプションを有効化：
 
 #### 必須設定
+
 - ✅ **Require a pull request before merging**
   - ✅ **Require approvals**: 1
   - ✅ **Dismiss stale PR approvals when new commits are pushed**
@@ -86,6 +91,7 @@ GitHubリポジトリで以下のブランチ保護ルールを設定してく�
 - ✅ **Restrict pushes that create files that are larger than 100 MB**
 
 #### 推奨設定
+
 - ✅ **Require linear history**
 - ✅ **Include administrators**
 - ✅ **Allow force pushes**: 無効
@@ -100,14 +106,17 @@ developブランチを使用する場合、同様の設定を適用してくだ�
 以下のステータスチェックがすべて成功する必要があります：
 
 ### CI チェック
+
 - `lint-and-test (18.x)` - Node.js 18.xでのテスト
 - `lint-and-test (20.x)` - Node.js 20.xでのテスト
 
 ### プルリクエストチェック
+
 - `pr-validation` - プルリクエスト検証
 - `build-check` - ビルド検証
 
 ### セキュリティチェック
+
 - `security-audit` - セキュリティ監査
 - `dependency-review` - 依存関係レビュー
 
@@ -143,6 +152,7 @@ npm run ci
 ### よくある問題
 
 #### 1. ESLintエラー
+
 ```bash
 # 自動修正可能なエラーを修正
 npm run lint:fix
@@ -152,6 +162,7 @@ npm run lint
 ```
 
 #### 2. フォーマットエラー
+
 ```bash
 # 自動フォーマット
 npm run format
@@ -161,6 +172,7 @@ npm run format:check
 ```
 
 #### 3. 型エラー
+
 ```bash
 # 型チェック実行
 npm run type-check
@@ -170,6 +182,7 @@ npm run type-check:strict
 ```
 
 #### 4. テスト失敗
+
 ```bash
 # テスト実行
 npm test
@@ -184,6 +197,7 @@ npm run test:ui
 ### セキュリティ警告
 
 #### npm audit警告
+
 ```bash
 # 監査実行
 npm run audit

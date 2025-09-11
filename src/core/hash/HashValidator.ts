@@ -1,4 +1,7 @@
-import { calculateHash, calculateHashFromObject } from '@/core/hash/HashCalculator';
+import {
+  calculateHash,
+  calculateHashFromObject,
+} from '@/core/hash/HashCalculator';
 import { isString } from '@/core/utils';
 
 /**
@@ -7,13 +10,13 @@ import { isString } from '@/core/utils';
  * @returns 有効なハッシュ形式かどうか
  */
 export function isValidHash(hash: string): boolean {
-    if (!isString(hash)) {
-        return false;
-    }
+  if (!isString(hash)) {
+    return false;
+  }
 
-    // SHA-1ハッシュは40文字の16進数文字列
-    const sha1Regex = /^[a-f0-9]{40}$/i;
-    return sha1Regex.test(hash);
+  // SHA-1ハッシュは40文字の16進数文字列
+  const sha1Regex = /^[a-f0-9]{40}$/i;
+  return sha1Regex.test(hash);
 }
 
 /**
@@ -24,20 +27,20 @@ export function isValidHash(hash: string): boolean {
  * @returns 有効な短縮ハッシュ形式かどうか
  */
 export function isValidShortHash(
-    shortHash: string,
-    minLength = 4,
-    maxLength = 40,
+  shortHash: string,
+  minLength = 4,
+  maxLength = 40,
 ): boolean {
-    if (!isString(shortHash)) {
-        return false;
-    }
+  if (!isString(shortHash)) {
+    return false;
+  }
 
-    if (shortHash.length < minLength || shortHash.length > maxLength) {
-        return false;
-    }
+  if (shortHash.length < minLength || shortHash.length > maxLength) {
+    return false;
+  }
 
-    const hexRegex = /^[a-f0-9]+$/i;
-    return hexRegex.test(shortHash);
+  const hexRegex = /^[a-f0-9]+$/i;
+  return hexRegex.test(shortHash);
 }
 
 /**
@@ -47,12 +50,12 @@ export function isValidShortHash(
  * @returns ハッシュがコンテンツと一致するかどうか
  */
 export function verifyHashIntegrity(hash: string, content: string): boolean {
-    if (!isValidHash(hash)) {
-        return false;
-    }
+  if (!isValidHash(hash)) {
+    return false;
+  }
 
-    const calculatedHash = calculateHash(content);
-    return hash.toLowerCase() === calculatedHash.toLowerCase();
+  const calculatedHash = calculateHash(content);
+  return hash.toLowerCase() === calculatedHash.toLowerCase();
 }
 
 /**
@@ -62,10 +65,10 @@ export function verifyHashIntegrity(hash: string, content: string): boolean {
  * @returns ハッシュがオブジェクトと一致するかどうか
  */
 export function verifyObjectHashIntegrity(hash: string, obj: unknown): boolean {
-    if (!isValidHash(hash)) {
-        return false;
-    }
+  if (!isValidHash(hash)) {
+    return false;
+  }
 
-    const calculatedHash = calculateHashFromObject(obj);
-    return hash.toLowerCase() === calculatedHash.toLowerCase();
+  const calculatedHash = calculateHashFromObject(obj);
+  return hash.toLowerCase() === calculatedHash.toLowerCase();
 }

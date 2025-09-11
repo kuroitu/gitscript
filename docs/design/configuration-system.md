@@ -18,16 +18,16 @@ GitScript は、柔軟で拡張可能な設定システムを提供します。
 
 ```typescript
 enum ConfigLevel {
-    GLOBAL = "global", // システム全体
-    USER = "user", // ユーザー固有
-    REPOSITORY = "repository", // リポジトリ固有
-    COMMAND = "command", // コマンド固有
+  GLOBAL = 'global', // システム全体
+  USER = 'user', // ユーザー固有
+  REPOSITORY = 'repository', // リポジトリ固有
+  COMMAND = 'command', // コマンド固有
 }
 
 interface ConfigScope {
-    level: ConfigLevel;
-    path?: string; // リポジトリパス（repository level）
-    command?: string; // コマンド名（command level）
+  level: ConfigLevel;
+  path?: string; // リポジトリパス（repository level）
+  command?: string; // コマンド名（command level）
 }
 ```
 
@@ -35,20 +35,20 @@ interface ConfigScope {
 
 ```typescript
 interface ConfigInheritance {
-    // 設定の取得（継承を考慮）
-    get<T>(key: string, scope?: ConfigScope): T | null;
+  // 設定の取得（継承を考慮）
+  get<T>(key: string, scope?: ConfigScope): T | null;
 
-    // 設定の設定
-    set<T>(key: string, value: T, scope?: ConfigScope): void;
+  // 設定の設定
+  set<T>(key: string, value: T, scope?: ConfigScope): void;
 
-    // 設定の削除
-    unset(key: string, scope?: ConfigScope): void;
+  // 設定の削除
+  unset(key: string, scope?: ConfigScope): void;
 
-    // 設定の一覧
-    list(scope?: ConfigScope): Map<string, any>;
+  // 設定の一覧
+  list(scope?: ConfigScope): Map<string, any>;
 
-    // 設定の検証
-    validate(scope?: ConfigScope): ValidationResult;
+  // 設定の検証
+  validate(scope?: ConfigScope): ValidationResult;
 }
 ```
 
@@ -58,32 +58,32 @@ interface ConfigInheritance {
 
 ```typescript
 interface CoreConfig {
-    // ユーザー情報
-    user: {
-        name: string;
-    };
+  // ユーザー情報
+  user: {
+    name: string;
+  };
 
-    // リポジトリ設定
-    repository: {
-        defaultBranch: string;
-        ignoreCase: boolean;
-        autocrlf: "true" | "false" | "input";
-    };
+  // リポジトリ設定
+  repository: {
+    defaultBranch: string;
+    ignoreCase: boolean;
+    autocrlf: 'true' | 'false' | 'input';
+  };
 
-    // エディタ設定
-    core: {
-        editor: string;
-        pager: string;
-        editor: string;
-    };
+  // エディタ設定
+  core: {
+    editor: string;
+    pager: string;
+    editor: string;
+  };
 
-    // ログ設定
-    log: {
-        level: "debug" | "info" | "warn" | "error";
-        format: "text" | "json" | "structured";
-        output: "console" | "file" | "both";
-        file?: string;
-    };
+  // ログ設定
+  log: {
+    level: 'debug' | 'info' | 'warn' | 'error';
+    format: 'text' | 'json' | 'structured';
+    output: 'console' | 'file' | 'both';
+    file?: string;
+  };
 }
 ```
 
@@ -91,37 +91,37 @@ interface CoreConfig {
 
 ```typescript
 interface StorageConfig {
-    // ストレージタイプ
-    type: "filesystem" | "database" | "cloud" | "custom";
+  // ストレージタイプ
+  type: 'filesystem' | 'database' | 'cloud' | 'custom';
 
-    // ファイルシステム設定
-    filesystem?: {
-        basePath: string;
-        compression: boolean;
-        encryption: boolean;
-        encryptionKey?: string;
-    };
+  // ファイルシステム設定
+  filesystem?: {
+    basePath: string;
+    compression: boolean;
+    encryption: boolean;
+    encryptionKey?: string;
+  };
 
-    // データベース設定
-    database?: {
-        type: "sqlite" | "postgresql" | "mysql" | "mongodb";
-        connectionString: string;
-        options?: any;
-    };
+  // データベース設定
+  database?: {
+    type: 'sqlite' | 'postgresql' | 'mysql' | 'mongodb';
+    connectionString: string;
+    options?: any;
+  };
 
-    // クラウド設定
-    cloud?: {
-        provider: "aws" | "azure" | "gcp" | "custom";
-        bucket: string;
-        region: string;
-        credentials: any;
-    };
+  // クラウド設定
+  cloud?: {
+    provider: 'aws' | 'azure' | 'gcp' | 'custom';
+    bucket: string;
+    region: string;
+    credentials: any;
+  };
 
-    // カスタム設定
-    custom?: {
-        implementation: string;
-        config: any;
-    };
+  // カスタム設定
+  custom?: {
+    implementation: string;
+    config: any;
+  };
 }
 ```
 
@@ -129,21 +129,21 @@ interface StorageConfig {
 
 ```typescript
 interface HashConfig {
-    // アルゴリズム
-    algorithm: "sha1" | "sha256" | "blake3" | "custom";
+  // アルゴリズム
+  algorithm: 'sha1' | 'sha256' | 'blake3' | 'custom';
 
-    // カスタムアルゴリズム
-    custom?: {
-        implementation: string;
-        config: any;
-    };
+  // カスタムアルゴリズム
+  custom?: {
+    implementation: string;
+    config: any;
+  };
 
-    // パフォーマンス設定
-    performance: {
-        useWorker: boolean;
-        workerCount: number;
-        chunkSize: number;
-    };
+  // パフォーマンス設定
+  performance: {
+    useWorker: boolean;
+    workerCount: number;
+    chunkSize: number;
+  };
 }
 ```
 
@@ -151,33 +151,33 @@ interface HashConfig {
 
 ```typescript
 interface SerializationConfig {
-    // 形式
-    format: "json" | "messagepack" | "protobuf" | "custom";
+  // 形式
+  format: 'json' | 'messagepack' | 'protobuf' | 'custom';
 
-    // JSON設定
-    json?: {
-        pretty: boolean;
-        validate: boolean;
-        schema?: any;
-    };
+  // JSON設定
+  json?: {
+    pretty: boolean;
+    validate: boolean;
+    schema?: any;
+  };
 
-    // MessagePack設定
-    messagepack?: {
-        compression: boolean;
-        binary: boolean;
-    };
+  // MessagePack設定
+  messagepack?: {
+    compression: boolean;
+    binary: boolean;
+  };
 
-    // Protocol Buffers設定
-    protobuf?: {
-        schema: string;
-        validate: boolean;
-    };
+  // Protocol Buffers設定
+  protobuf?: {
+    schema: string;
+    validate: boolean;
+  };
 
-    // カスタム設定
-    custom?: {
-        implementation: string;
-        config: any;
-    };
+  // カスタム設定
+  custom?: {
+    implementation: string;
+    config: any;
+  };
 }
 ```
 
@@ -185,24 +185,24 @@ interface SerializationConfig {
 
 ```typescript
 interface PluginConfig {
-    // プラグインの有効/無効
-    enabled: boolean;
+  // プラグインの有効/無効
+  enabled: boolean;
 
-    // プラグイン固有の設定
-    config: any;
+  // プラグイン固有の設定
+  config: any;
 
-    // 依存関係
-    dependencies: string[];
+  // 依存関係
+  dependencies: string[];
 
-    // 優先度
-    priority: number;
+  // 優先度
+  priority: number;
 
-    // 条件付き有効化
-    conditions?: {
-        os?: string[];
-        nodeVersion?: string;
-        repository?: string;
-    };
+  // 条件付き有効化
+  conditions?: {
+    os?: string[];
+    nodeVersion?: string;
+    repository?: string;
+  };
 }
 ```
 
@@ -212,33 +212,33 @@ interface PluginConfig {
 
 ```typescript
 interface ConfigManager {
-    // 設定の読み込み
-    load(scope?: ConfigScope): Promise<void>;
+  // 設定の読み込み
+  load(scope?: ConfigScope): Promise<void>;
 
-    // 設定の保存
-    save(scope?: ConfigScope): Promise<void>;
+  // 設定の保存
+  save(scope?: ConfigScope): Promise<void>;
 
-    // 設定の取得
-    get<T>(key: string, scope?: ConfigScope): T | null;
-    getRequired<T>(key: string, scope?: ConfigScope): T;
+  // 設定の取得
+  get<T>(key: string, scope?: ConfigScope): T | null;
+  getRequired<T>(key: string, scope?: ConfigScope): T;
 
-    // 設定の設定
-    set<T>(key: string, value: T, scope?: ConfigScope): void;
+  // 設定の設定
+  set<T>(key: string, value: T, scope?: ConfigScope): void;
 
-    // 設定の削除
-    unset(key: string, scope?: ConfigScope): void;
+  // 設定の削除
+  unset(key: string, scope?: ConfigScope): void;
 
-    // 設定の検証
-    validate(scope?: ConfigScope): Promise<ValidationResult>;
+  // 設定の検証
+  validate(scope?: ConfigScope): Promise<ValidationResult>;
 
-    // 設定のリセット
-    reset(scope?: ConfigScope): void;
+  // 設定のリセット
+  reset(scope?: ConfigScope): void;
 
-    // 設定のエクスポート
-    export(scope?: ConfigScope): string;
+  // 設定のエクスポート
+  export(scope?: ConfigScope): string;
 
-    // 設定のインポート
-    import(config: string, scope?: ConfigScope): void;
+  // 設定のインポート
+  import(config: string, scope?: ConfigScope): void;
 }
 ```
 
@@ -246,24 +246,24 @@ interface ConfigManager {
 
 ```typescript
 interface ConfigValidator {
-    // スキーマの登録
-    registerSchema(key: string, schema: any): void;
+  // スキーマの登録
+  registerSchema(key: string, schema: any): void;
 
-    // 設定の検証
-    validate(key: string, value: any): ValidationResult;
+  // 設定の検証
+  validate(key: string, value: any): ValidationResult;
 
-    // スキーマの取得
-    getSchema(key: string): any;
+  // スキーマの取得
+  getSchema(key: string): any;
 
-    // デフォルト値の取得
-    getDefault(key: string): any;
+  // デフォルト値の取得
+  getDefault(key: string): any;
 }
 
 interface ValidationResult {
-    valid: boolean;
-    errors: string[];
-    warnings: string[];
-    suggestions: string[];
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  suggestions: string[];
 }
 ```
 
@@ -271,20 +271,20 @@ interface ValidationResult {
 
 ```typescript
 interface ConfigStorage {
-    // 設定の読み込み
-    load(scope: ConfigScope): Promise<Map<string, any>>;
+  // 設定の読み込み
+  load(scope: ConfigScope): Promise<Map<string, any>>;
 
-    // 設定の保存
-    save(scope: ConfigScope, config: Map<string, any>): Promise<void>;
+  // 設定の保存
+  save(scope: ConfigScope, config: Map<string, any>): Promise<void>;
 
-    // 設定の削除
-    delete(scope: ConfigScope): Promise<void>;
+  // 設定の削除
+  delete(scope: ConfigScope): Promise<void>;
 
-    // 設定の存在確認
-    exists(scope: ConfigScope): Promise<boolean>;
+  // 設定の存在確認
+  exists(scope: ConfigScope): Promise<boolean>;
 
-    // 設定の一覧
-    list(): Promise<ConfigScope[]>;
+  // 設定の一覧
+  list(): Promise<ConfigScope[]>;
 }
 ```
 
@@ -294,29 +294,29 @@ interface ConfigStorage {
 
 ```json
 {
-    "user": {
-        "name": "John Doe",
-        "email": "john@example.com"
-    },
-    "repository": {
-        "defaultBranch": "main",
-        "ignoreCase": false
-    },
-    "storage": {
-        "type": "filesystem",
-        "filesystem": {
-            "basePath": "/path/to/repo",
-            "compression": true
-        }
-    },
-    "plugins": {
-        "custom-command": {
-            "enabled": true,
-            "config": {
-                "command": "my-command"
-            }
-        }
+  "user": {
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "repository": {
+    "defaultBranch": "main",
+    "ignoreCase": false
+  },
+  "storage": {
+    "type": "filesystem",
+    "filesystem": {
+      "basePath": "/path/to/repo",
+      "compression": true
     }
+  },
+  "plugins": {
+    "custom-command": {
+      "enabled": true,
+      "config": {
+        "command": "my-command"
+      }
+    }
+  }
 }
 ```
 
@@ -324,24 +324,24 @@ interface ConfigStorage {
 
 ```yaml
 user:
-    name: John Doe
-    email: john@example.com
+  name: John Doe
+  email: john@example.com
 
 repository:
-    defaultBranch: main
-    ignoreCase: false
+  defaultBranch: main
+  ignoreCase: false
 
 storage:
-    type: filesystem
-    filesystem:
-        basePath: /path/to/repo
-        compression: true
+  type: filesystem
+  filesystem:
+    basePath: /path/to/repo
+    compression: true
 
 plugins:
-    custom-command:
-        enabled: true
-        config:
-            command: my-command
+  custom-command:
+    enabled: true
+    config:
+      command: my-command
 ```
 
 ### 3. TOML 形式
@@ -379,17 +379,17 @@ const configManager = new ConfigManager();
 await configManager.load();
 
 // 設定の取得
-const userName = configManager.get<string>("user.name");
-const defaultBranch = configManager.get<string>("repository.defaultBranch", {
-    level: ConfigLevel.REPOSITORY,
-    path: "/path/to/repo",
+const userName = configManager.get<string>('user.name');
+const defaultBranch = configManager.get<string>('repository.defaultBranch', {
+  level: ConfigLevel.REPOSITORY,
+  path: '/path/to/repo',
 });
 
 // 設定の設定
-configManager.set("user.name", "Jane Doe");
-configManager.set("storage.type", "database", {
-    level: ConfigLevel.REPOSITORY,
-    path: "/path/to/repo",
+configManager.set('user.name', 'Jane Doe');
+configManager.set('storage.type', 'database', {
+  level: ConfigLevel.REPOSITORY,
+  path: '/path/to/repo',
 });
 
 // 設定の保存
@@ -398,6 +398,6 @@ await configManager.save();
 // 設定の検証
 const validation = await configManager.validate();
 if (!validation.valid) {
-    console.error("設定にエラーがあります:", validation.errors);
+  console.error('設定にエラーがあります:', validation.errors);
 }
 ```
