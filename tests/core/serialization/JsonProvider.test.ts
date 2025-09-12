@@ -49,6 +49,15 @@ describe('JsonProvider (Extended)', () => {
       expect(result.data).toBe('{}'); // 関数はデフォルトで無視される
     });
 
+    it('should handle function with replace option in direct serialization', () => {
+      // 関数を直接シリアライズする場合のテスト
+      const func = () => 'test';
+
+      // 関数を直接シリアライズしようとすると、replacerが呼ばれる
+      const result = serialize(func, { functionHandling: 'replace' });
+      expect(result.data).toBe('null'); // 関数はnullに変換される
+    });
+
     it('should handle function with ignore option', () => {
       const obj = { func: () => 'test' };
       const result = serialize(obj, { functionHandling: 'ignore' });
@@ -122,6 +131,95 @@ describe('JsonProvider (Extended)', () => {
       };
 
       expect(() => serialize(obj)).toThrow(SerializationError);
+    });
+
+    it('should handle JSON.stringify errors in stringifyPretty', () => {
+      // 循環参照を含むオブジェクトでstringifyPrettyをテスト
+      const obj: any = { a: 1 };
+      obj.self = obj;
+
+      expect(() => {
+        // stringifyPrettyは内部でstringifyWithOptionsを呼び出す
+        serialize(obj, { format: SerializationFormat.pretty, indent: 2 });
+      }).toThrow(SerializationError);
+    });
+
+    it('should handle JSON.stringify errors in stringifyWithOptions', () => {
+      // 循環参照を含むオブジェクトでstringifyWithOptionsをテスト
+      const obj: any = { a: 1 };
+      obj.self = obj;
+
+      expect(() => {
+        // stringifyWithOptionsは内部でJSON.stringifyを呼び出す
+        serialize(obj, {
+          format: SerializationFormat.json,
+          functionHandling: 'error',
+          symbolHandling: 'error',
+          undefinedHandling: 'error',
+        });
+      }).toThrow(SerializationError);
+    });
+
+    it('should handle function with error option in replacer', () => {
+      const obj = { func: () => 'test' };
+
+      expect(() => {
+        serialize(obj, {
+          functionHandling: 'error',
+          format: SerializationFormat.json,
+        });
+      }).toThrow(SerializationError);
+    });
+
+    it('should handle symbol with error option in replacer', () => {
+      const obj = { [Symbol('test')]: 'value' };
+
+      // シンボルプロパティはObject.entriesで取得されないため、エラーは発生しない
+      // 代わりに、シンボル値を直接テストする
+      const result = serialize(obj, {
+        symbolHandling: 'error',
+        format: SerializationFormat.json,
+      });
+      expect(result.data).toBe('{}');
+    });
+
+    it('should handle symbol with replace option in direct serialization', () => {
+      // シンボルを直接シリアライズする場合のテスト
+      const sym = Symbol('test');
+
+      const result = serialize(sym, { symbolHandling: 'replace' });
+      expect(result.data).toBe('null'); // シンボルはnullに変換される
+    });
+
+    it('should handle symbol with ignore option in direct serialization', () => {
+      // シンボルを直接シリアライズする場合のテスト
+      const sym = Symbol('test');
+
+      const result = serialize(sym, { symbolHandling: 'ignore' });
+      expect(result.data).toBe('null'); // undefinedはnullに変換される
+    });
+
+    it('should handle undefined with error option in replacer', () => {
+      const obj = { value: undefined };
+
+      expect(() => {
+        serialize(obj, {
+          undefinedHandling: 'error',
+          format: SerializationFormat.json,
+        });
+      }).toThrow(SerializationError);
+    });
+
+    it('should handle undefined with replace option in direct serialization', () => {
+      // undefinedを直接シリアライズする場合のテスト
+      const result = serialize(undefined, { undefinedHandling: 'replace' });
+      expect(result.data).toBe('null');
+    });
+
+    it('should handle undefined with ignore option in direct serialization', () => {
+      // undefinedを直接シリアライズする場合のテスト
+      const result = serialize(undefined, { undefinedHandling: 'ignore' });
+      expect(result.data).toBe('null'); // undefinedはnullに変換される
     });
   });
 

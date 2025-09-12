@@ -2,12 +2,16 @@
  * GitScript基底エラー
  */
 export class GitScriptError extends Error {
+  public readonly cause?: Error;
+
   constructor(
     message: string,
     public readonly code?: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = 'GitScriptError';
+    this.cause = cause;
   }
 }
 
@@ -82,8 +86,8 @@ export class TypeError extends GitScriptError {
  * 引数エラー
  */
 export class ArgumentError extends GitScriptError {
-  constructor(parameterName: string, message: string) {
-    super(`Invalid argument '${parameterName}': ${message}`, 'ARGUMENT_ERROR');
+  constructor(message: string, cause?: Error) {
+    super(message, 'ARGUMENT_ERROR', cause);
     this.name = 'ArgumentError';
   }
 }
@@ -96,7 +100,7 @@ export class DataTypeDetectionError extends GitScriptError {
     const fullMessage = originalError
       ? `Failed to detect data type: ${message} (${originalError.message})`
       : `Failed to detect data type: ${message}`;
-    super(fullMessage, 'DATA_TYPE_DETECTION_ERROR');
+    super(fullMessage, 'DATA_TYPE_DETECTION_ERROR', originalError);
     this.name = 'DataTypeDetectionError';
   }
 }

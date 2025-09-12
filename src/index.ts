@@ -23,18 +23,35 @@ export {
 // ユーティリティ機能のエクスポート
 export {
   isArray,
+  isBigInt,
+  isBoolean,
   isBuffer,
+  isDate,
+  isFunction,
+  isMap,
+  isNativeError,
+  isNull,
   isNullOrUndefined,
+  isNumber,
+  isObject,
+  isPrimitive,
+  isRegExp,
+  isSet,
   isString,
+  isSymbol,
+  isUndefined,
   validateArray,
   validateBuffer,
+  validateRange,
   validateString,
 } from '@/core/utils';
 
 // 型定義のエクスポート
-export type { Author, Commit, DataDelta, ObjectSnapshot } from '@/types';
+export * from '@/core/serialization/types';
 
 // エラークラスのエクスポート
+export { CryptoError } from '@/core/crypto/CryptoProvider';
+export { SerializationError } from '@/core/serialization/JsonProvider';
 export * from '@/types/Errors';
 
 // メインのGitScriptクラス（今後実装予定）

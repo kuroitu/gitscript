@@ -20,6 +20,19 @@ export function isValidHash(hash: string): boolean {
 }
 
 /**
+ * ハッシュの形式を検証し、無効な場合はエラーを投げる
+ * @param hash 検証するハッシュ文字列
+ * @returns 検証されたハッシュ文字列
+ * @throws Error 無効なハッシュ形式の場合
+ */
+export function validateHash(hash: string): string {
+  if (!isValidHash(hash)) {
+    throw new Error(`Invalid hash format: ${hash}`);
+  }
+  return hash;
+}
+
+/**
  * 短縮ハッシュの形式を検証する
  * @param shortHash 検証する短縮ハッシュ
  * @param minLength 最小長（デフォルト: 4）

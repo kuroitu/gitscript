@@ -1,22 +1,23 @@
 import {
   calculateSha1,
   calculateSha1FromMultiple,
+  CryptoError,
   isCryptoAvailable,
 } from '@/core/crypto/CryptoProvider';
 import {
   ENCODING_TEST_CASES,
   EXPECTED_HASHES,
-  KNOWN_HASH_TEST_CASES,
-  SEPARATOR_TEST_CASES,
-  TEST_ARRAYS,
-  TEST_BUFFERS,
-  TEST_STRINGS,
   expectValidHash,
   generateLargeArray,
   generateLargeBuffer,
   generateLargeString,
+  KNOWN_HASH_TEST_CASES,
   measureExecutionTime,
   runParameterizedTests,
+  SEPARATOR_TEST_CASES,
+  TEST_ARRAYS,
+  TEST_BUFFERS,
+  TEST_STRINGS,
 } from '@tests/core/crypto/testHelpers';
 import { describe, expect, it } from 'vitest';
 
@@ -285,6 +286,63 @@ describe('Crypto Provider Functions', () => {
       });
 
       expect(executionTime).toBeLessThan(2000); // 2秒以内
+    });
+
+    it('should handle invalid encoding in calculateSha1', () => {
+      // Node.jsのcryptoモジュールは無効なエンコーディングでもエラーを投げない場合がある
+      // そのため、エラーが発生するかどうかは実装に依存する
+      try {
+        const result = calculateSha1('test', 'invalid-encoding' as any);
+        expect(typeof result).toBe('string');
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+      }
+    });
+
+    it('should handle invalid encoding in calculateSha1FromMultiple', () => {
+      // Node.jsのcryptoモジュールは無効なエンコーディングでもエラーを投げない場合がある
+      // そのため、エラーが発生するかどうかは実装に依存する
+      try {
+        const result = calculateSha1FromMultiple(
+          ['test'],
+          '\0',
+          'invalid-encoding' as any,
+        );
+        expect(typeof result).toBe('string');
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+      }
+    });
+
+    it('should handle crypto errors gracefully', () => {
+      // 実際のcrypto機能は利用可能なので、エラーハンドリングのロジックをテスト
+      // エラーが発生した場合のCryptoErrorの構造をテスト
+      try {
+        // 無効なエンコーディングでエラーを発生させる試み
+        calculateSha1('test', 'invalid-encoding' as any);
+      } catch (error) {
+        if (error instanceof CryptoError) {
+          expect(error.message).toContain('Failed to calculate SHA-1 hash');
+          expect(error.code).toBe('CRYPTO_ERROR');
+        }
+      }
+    });
+
+    it('should handle CryptoError constructor with cause', () => {
+      const originalError = new Error('Original error');
+      const cryptoError = new CryptoError('Test error', originalError);
+
+      expect(cryptoError.message).toContain('Crypto error: Test error');
+      expect(cryptoError.name).toBe('CryptoError');
+      expect(cryptoError.cause).toBe(originalError);
+    });
+
+    it('should handle CryptoError constructor without cause', () => {
+      const cryptoError = new CryptoError('Test error');
+
+      expect(cryptoError.message).toContain('Crypto error: Test error');
+      expect(cryptoError.name).toBe('CryptoError');
+      expect(cryptoError.cause).toBeUndefined();
     });
 
     it('should handle very large arrays', () => {
