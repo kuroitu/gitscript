@@ -71,7 +71,9 @@ export function validateRange(
   parameterName = 'value',
 ): number {
   if (value < min || value > max) {
-    throw new ArgumentError(parameterName, `must be between ${min} and ${max}`);
+    throw new ArgumentError(
+      `${parameterName} must be between ${min} and ${max}`,
+    );
   }
   return value;
 }

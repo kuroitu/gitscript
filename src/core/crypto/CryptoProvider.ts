@@ -14,11 +14,8 @@ import { createHash as nodeCreateHash } from 'crypto';
  */
 export class CryptoError extends GitScriptError {
   constructor(message: string, cause?: Error) {
-    super(`Crypto error: ${message}`, 'CRYPTO_ERROR');
+    super(`Crypto error: ${message}`, 'CRYPTO_ERROR', cause);
     this.name = 'CryptoError';
-    if (cause) {
-      this.cause = cause;
-    }
   }
 }
 

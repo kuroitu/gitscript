@@ -16,6 +16,7 @@ export {
 export {
   isValidHash,
   isValidShortHash,
+  validateHash,
   verifyHashIntegrity,
   verifyObjectHashIntegrity,
 } from '@/core/hash/HashValidator';

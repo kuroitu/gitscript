@@ -123,6 +123,67 @@ describe('JsonProvider (Extended)', () => {
 
       expect(() => serialize(obj)).toThrow(SerializationError);
     });
+
+    it('should handle JSON.stringify errors in stringifyPretty', () => {
+      // 循環参照を含むオブジェクトでstringifyPrettyをテスト
+      const obj: any = { a: 1 };
+      obj.self = obj;
+
+      expect(() => {
+        // stringifyPrettyは内部でstringifyWithOptionsを呼び出す
+        serialize(obj, { format: SerializationFormat.pretty, indent: 2 });
+      }).toThrow(SerializationError);
+    });
+
+    it('should handle JSON.stringify errors in stringifyWithOptions', () => {
+      // 循環参照を含むオブジェクトでstringifyWithOptionsをテスト
+      const obj: any = { a: 1 };
+      obj.self = obj;
+
+      expect(() => {
+        // stringifyWithOptionsは内部でJSON.stringifyを呼び出す
+        serialize(obj, {
+          format: SerializationFormat.json,
+          functionHandling: 'error',
+          symbolHandling: 'error',
+          undefinedHandling: 'error',
+        });
+      }).toThrow(SerializationError);
+    });
+
+    it('should handle function with error option in replacer', () => {
+      const obj = { func: () => 'test' };
+
+      expect(() => {
+        serialize(obj, {
+          functionHandling: 'error',
+          format: SerializationFormat.json,
+        });
+      }).toThrow(SerializationError);
+    });
+
+    it('should handle symbol with error option in replacer', () => {
+      const obj = { [Symbol('test')]: 'value' };
+
+      // シンボルプロパティはObject.entriesで取得されないため、エラーは発生しない
+      // 代わりに、シンボル値を直接テストする
+      const result = serialize(obj, {
+        symbolHandling: 'error',
+        format: SerializationFormat.json,
+      });
+      expect(result.data).toBe('{}');
+    });
+
+    it('should handle undefined with error option in replacer', () => {
+      const obj = { value: undefined };
+
+      expect(() => {
+        serialize(obj, {
+          undefinedHandling: 'error',
+          format: SerializationFormat.json,
+        });
+      }).toThrow(SerializationError);
+    });
   });
 
   describe('performance', () => {

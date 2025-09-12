@@ -24,11 +24,8 @@ import { GitScriptError } from '@/types';
  */
 export class SerializationError extends GitScriptError {
   constructor(message: string, cause?: Error) {
-    super(`Serialization error: ${message}`, 'SERIALIZATION_ERROR');
+    super(`Serialization error: ${message}`, 'SERIALIZATION_ERROR', cause);
     this.name = 'SerializationError';
-    if (cause) {
-      this.cause = cause;
-    }
   }
 }
 

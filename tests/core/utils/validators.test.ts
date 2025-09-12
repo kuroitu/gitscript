@@ -3,7 +3,7 @@ import {
   validateBuffer,
   validateRange,
   validateString,
-} from '@/core/utils/validators';
+} from '@/core/utils';
 import {
   RANGE_VALIDATION_TEST_CASES,
   TEST_VALUES,

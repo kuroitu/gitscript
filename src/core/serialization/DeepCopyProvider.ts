@@ -14,9 +14,6 @@ import {
   FunctionHandling,
   SymbolHandling,
 } from '@/core/serialization/types';
-
-// 型の再エクスポート
-export type { DeepCopyOptions, DeepCopyResult };
 import {
   isArray,
   isBigInt,
