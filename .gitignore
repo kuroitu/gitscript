@@ -114,6 +114,7 @@ playwright/.cache/
 
 # Vite
 .vite/
+html/
 
 # Vitest
 coverage/
