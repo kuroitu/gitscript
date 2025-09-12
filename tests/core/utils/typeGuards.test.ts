@@ -17,7 +17,7 @@ import {
   isString,
   isSymbol,
   isUndefined,
-} from '@/core/utils';
+} from '@/core/utils/typeGuards';
 import {
   TEST_VALUES,
   TYPE_GUARD_TEST_CASES,
@@ -262,9 +262,9 @@ describe('Type Guard Functions', () => {
   describe('isFunction', () => {
     it('should return true for function values', () => {
       expect(isFunction(() => {})).toBe(true);
-      expect(isFunction(function() {})).toBe(true);
+      expect(isFunction(function () {})).toBe(true);
       expect(isFunction(async () => {})).toBe(true);
-      expect(isFunction(function*() {})).toBe(true);
+      expect(isFunction(function* () {})).toBe(true);
     });
 
     it('should return false for non-function values', () => {

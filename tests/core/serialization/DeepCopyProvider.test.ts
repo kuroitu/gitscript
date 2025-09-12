@@ -2,9 +2,9 @@
  * DeepCopyProvider のテスト
  */
 
-import type { DeepCopyOptions } from '@/core/serialization/DeepCopyProvider';
 import { deepCopy } from '@/core/serialization/DeepCopyProvider';
 import { SerializationError } from '@/core/serialization/JsonProvider';
+import type { DeepCopyOptions } from '@/core/serialization/types';
 import { describe, expect, it } from 'vitest';
 
 describe('DeepCopyProvider', () => {

@@ -49,6 +49,15 @@ describe('JsonProvider (Extended)', () => {
       expect(result.data).toBe('{}'); // 関数はデフォルトで無視される
     });
 
+    it('should handle function with replace option in direct serialization', () => {
+      // 関数を直接シリアライズする場合のテスト
+      const func = () => 'test';
+
+      // 関数を直接シリアライズしようとすると、replacerが呼ばれる
+      const result = serialize(func, { functionHandling: 'replace' });
+      expect(result.data).toBe('null'); // 関数はnullに変換される
+    });
+
     it('should handle function with ignore option', () => {
       const obj = { func: () => 'test' };
       const result = serialize(obj, { functionHandling: 'ignore' });
@@ -174,6 +183,22 @@ describe('JsonProvider (Extended)', () => {
       expect(result.data).toBe('{}');
     });
 
+    it('should handle symbol with replace option in direct serialization', () => {
+      // シンボルを直接シリアライズする場合のテスト
+      const sym = Symbol('test');
+
+      const result = serialize(sym, { symbolHandling: 'replace' });
+      expect(result.data).toBe('null'); // シンボルはnullに変換される
+    });
+
+    it('should handle symbol with ignore option in direct serialization', () => {
+      // シンボルを直接シリアライズする場合のテスト
+      const sym = Symbol('test');
+
+      const result = serialize(sym, { symbolHandling: 'ignore' });
+      expect(result.data).toBe('null'); // undefinedはnullに変換される
+    });
+
     it('should handle undefined with error option in replacer', () => {
       const obj = { value: undefined };
 
@@ -183,6 +208,18 @@ describe('JsonProvider (Extended)', () => {
           format: SerializationFormat.json,
         });
       }).toThrow(SerializationError);
+    });
+
+    it('should handle undefined with replace option in direct serialization', () => {
+      // undefinedを直接シリアライズする場合のテスト
+      const result = serialize(undefined, { undefinedHandling: 'replace' });
+      expect(result.data).toBe('null');
+    });
+
+    it('should handle undefined with ignore option in direct serialization', () => {
+      // undefinedを直接シリアライズする場合のテスト
+      const result = serialize(undefined, { undefinedHandling: 'ignore' });
+      expect(result.data).toBe('null'); // undefinedはnullに変換される
     });
   });
 

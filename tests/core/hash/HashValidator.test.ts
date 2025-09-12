@@ -5,6 +5,7 @@ import {
 import {
   isValidHash,
   isValidShortHash,
+  validateHash,
   verifyHashIntegrity,
   verifyObjectHashIntegrity,
 } from '@/core/hash/HashValidator';
@@ -32,6 +33,27 @@ describe('Hash Validator Functions', () => {
       expect(isValidHash('a1b2c3d4e5f6789012345678901234567890abcz')).toBe(
         false,
       );
+    });
+  });
+
+  describe('validateHash', () => {
+    it('should return hash for valid hash format', () => {
+      const validHash = VALID_HASHES.sha1_1;
+      expect(validateHash(validHash)).toBe(validHash);
+    });
+
+    it('should throw error for invalid hash format', () => {
+      expect(() => validateHash('invalid-hash')).toThrow(
+        'Invalid hash format: invalid-hash',
+      );
+      expect(() => validateHash('')).toThrow('Invalid hash format: ');
+      expect(() => validateHash('123')).toThrow('Invalid hash format: 123');
+    });
+
+    it('should throw error for non-string input', () => {
+      expect(() => validateHash(null as any)).toThrow();
+      expect(() => validateHash(undefined as any)).toThrow();
+      expect(() => validateHash(123 as any)).toThrow();
     });
   });
 

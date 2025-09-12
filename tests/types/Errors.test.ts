@@ -8,6 +8,8 @@ import {
   ArgumentError,
   DataTypeDetectionError,
   GitScriptError,
+  ObjectNotFoundError,
+  RepositoryNotFoundError,
 } from '@/types/Errors';
 import { describe, expect, it } from 'vitest';
 
@@ -224,6 +226,26 @@ describe('Error Classes', () => {
       expect(dataTypeDetectionError.message).toBe(
         'Failed to detect data type: Unknown type (Original error message)',
       );
+    });
+  });
+
+  describe('RepositoryNotFoundError', () => {
+    it('should create repository not found error', () => {
+      const error = new RepositoryNotFoundError('/path/to/repo');
+
+      expect(error.message).toBe('Repository not found at: /path/to/repo');
+      expect(error.code).toBe('REPOSITORY_NOT_FOUND');
+      expect(error.name).toBe('RepositoryNotFoundError');
+    });
+  });
+
+  describe('ObjectNotFoundError', () => {
+    it('should create object not found error', () => {
+      const error = new ObjectNotFoundError('abc123');
+
+      expect(error.message).toBe('Object not found: abc123');
+      expect(error.code).toBe('OBJECT_NOT_FOUND');
+      expect(error.name).toBe('ObjectNotFoundError');
     });
   });
 });

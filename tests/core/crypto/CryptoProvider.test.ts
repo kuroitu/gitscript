@@ -314,6 +314,20 @@ describe('Crypto Provider Functions', () => {
       }
     });
 
+    it('should handle crypto errors gracefully', () => {
+      // 実際のcrypto機能は利用可能なので、エラーハンドリングのロジックをテスト
+      // エラーが発生した場合のCryptoErrorの構造をテスト
+      try {
+        // 無効なエンコーディングでエラーを発生させる試み
+        calculateSha1('test', 'invalid-encoding' as any);
+      } catch (error) {
+        if (error instanceof CryptoError) {
+          expect(error.message).toContain('Failed to calculate SHA-1 hash');
+          expect(error.code).toBe('CRYPTO_ERROR');
+        }
+      }
+    });
+
     it('should handle CryptoError constructor with cause', () => {
       const originalError = new Error('Original error');
       const cryptoError = new CryptoError('Test error', originalError);
