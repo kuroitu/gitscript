@@ -74,7 +74,6 @@ Core Layer
 └── Object Manager
 
 Storage Layer
-├── File System Storage
 ├── SHA-1 Hash
 ├── JSON Serialization
 └── Object Delta Manager
@@ -99,7 +98,7 @@ Data Layer
 ## ストレージ構造
 
 ```
-.git/
+.gitscript/
 ├── objects/          # JavaScriptオブジェクトストア
 │   ├── snapshots/    # オブジェクトスナップショット
 │   ├── deltas/       # オブジェクト差分
@@ -116,10 +115,9 @@ Data Layer
 ### 実装予定フェーズ
 
 - **Phase 1**: 基本データ構造（型定義、ハッシュ、シリアライゼーション）
-- **Phase 2**: ストレージ層（ファイルシステム、参照管理、設定）
-- **Phase 3**: オブジェクト差分管理（差分計算、適用、復元）
-- **Phase 4**: コア機能（リポジトリ、ステージング、コミット）
-- **Phase 5**: API 層（プログラム API）
+- **Phase 2**: オブジェクト差分管理（差分計算、適用、復元）
+- **Phase 3**: コア機能（リポジトリ、ステージング、コミット）
+- **Phase 4**: API 層（プログラム API）
 
 ## 制限事項
 
