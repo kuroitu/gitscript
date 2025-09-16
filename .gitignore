@@ -124,3 +124,6 @@ coverage/
 
 # Local development
 .local/
+
+# Cursor
+.cursor/

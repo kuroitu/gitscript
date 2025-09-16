@@ -35,6 +35,18 @@ export interface PropertyChange {
 }
 
 /**
+ * 変更情報のキー
+ *
+ * 実際に使用されるキーの型を定義
+ */
+export type ChangeKey =
+  | string // 通常のプロパティ名
+  | `[${number}]` // 配列インデックス
+  | '__type__' // 型変更
+  | '__value__' // 値変更
+  | '__length__'; // 配列長変更
+
+/**
  * オブジェクト差分
  *
  * 2つのオブジェクト間の差分を表現します。
@@ -42,7 +54,7 @@ export interface PropertyChange {
  */
 export interface ObjectDelta {
   /** プロパティ名をキーとした変更情報のマップ */
-  changes: Record<string, PropertyChange>;
+  changes: Record<ChangeKey, PropertyChange>;
   /** 変更されたプロパティの数 */
   changeCount: number;
   /** 追加されたプロパティの数 */
