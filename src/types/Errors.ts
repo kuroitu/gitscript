@@ -104,3 +104,16 @@ export class DataTypeDetectionError extends GitScriptError {
     this.name = 'DataTypeDetectionError';
   }
 }
+
+/**
+ * 循環参照エラー
+ */
+export class CircularReferenceError extends GitScriptError {
+  constructor(objectPath?: string) {
+    const message = objectPath
+      ? `Circular reference detected at: ${objectPath}`
+      : 'Circular reference detected';
+    super(message, 'CIRCULAR_REFERENCE_ERROR');
+    this.name = 'CircularReferenceError';
+  }
+}

@@ -7,347 +7,392 @@
  * ネストしたオブジェクトの再帰的な処理もサポートします。
  */
 
-import { isArray, isObject, isPrimitive } from '@/core/utils/typeGuards';
+import { isArray, isNativeError, isObject, isPrimitive } from '@/core/utils';
 import {
   DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
 } from '@/types/ObjectDelta';
+import { CircularReferenceError } from '@/types/Errors';
 
 /**
- * オブジェクト差分計算器クラス
+ * 2つのオブジェクト間の差分を計算します
+ *
+ * @param oldObject 変更前のオブジェクト
+ * @param newObject 変更後のオブジェクト
+ * @param options オプション
+ * @returns 差分計算の結果
  */
-export class ObjectDeltaCalculator {
-  private options: Required<DeltaCalculationOptions>;
+export function calculateObjectDelta(
+  oldObject: unknown,
+  newObject: unknown,
+  options: DeltaCalculationOptions = {},
+): DeltaCalculationResult {
+  const defaultOptions: Required<DeltaCalculationOptions> = {
+    deep: true,
+    arrayOrderMatters: true,
+    ignoreProperties: [],
+    customComparator: () => false,
+  };
 
-  constructor(options: DeltaCalculationOptions = {}) {
-    this.options = {
-      deep: true,
-      arrayOrderMatters: true,
-      ignoreProperties: [],
-      customComparator: () => false,
-      ...options,
+  const mergedOptions = { ...defaultOptions, ...options };
+  const startTime = performance.now();
+
+  try {
+    const delta = calculateDelta(oldObject, newObject, mergedOptions);
+    const duration = performance.now() - startTime;
+
+    return {
+      delta,
+      duration,
+      totalProperties: countTotalProperties(oldObject, newObject),
+    };
+  } catch (error) {
+    const duration = performance.now() - startTime;
+
+    return {
+      delta: createEmptyDelta(),
+      duration,
+      totalProperties: 0,
+      error: isNativeError(error) ? error.message : 'Unknown error',
     };
   }
+}
 
-  /**
-   * 2つのオブジェクト間の差分を計算します
-   *
-   * @param oldObject 変更前のオブジェクト
-   * @param newObject 変更後のオブジェクト
-   * @returns 差分計算の結果
-   */
-  calculate(oldObject: unknown, newObject: unknown): DeltaCalculationResult {
-    const startTime = performance.now();
+/**
+ * 差分を計算する内部関数
+ * @param oldObject 変更前のオブジェクト
+ * @param newObject 変更後のオブジェクト
+ * @param options オプション
+ * @param visited 訪問済みオブジェクトの集合
+ * @returns 差分計算の結果
+ */
+function calculateDelta(
+  oldObject: unknown,
+  newObject: unknown,
+  options: Required<DeltaCalculationOptions>,
+  visited = new WeakSet(),
+): ObjectDelta {
+   // 循環参照の検出
+   if (
+     isObject(oldObject) &&
+     visited.has(oldObject as Record<string, unknown>)
+   ) {
+     throw new CircularReferenceError('oldObject');
+   }
+   if (
+     isObject(newObject) &&
+     visited.has(newObject as Record<string, unknown>)
+   ) {
+     throw new CircularReferenceError('newObject');
+   }
 
+  // プリミティブ値の比較
+  if (isPrimitive(oldObject) || isPrimitive(newObject)) {
+    return calculatePrimitiveDelta(oldObject, newObject);
+  }
+
+  // 配列の比較
+  if (isArray(oldObject) && isArray(newObject)) {
+    // 配列をvisitedに追加
+    visited.add(oldObject as Record<string, unknown>);
+    visited.add(newObject as Record<string, unknown>);
+    
     try {
-      const delta = this.calculateDelta(oldObject, newObject);
-      const duration = performance.now() - startTime;
-
-      return {
-        delta,
-        duration,
-        totalProperties: this.countTotalProperties(oldObject, newObject),
-      };
-    } catch (error) {
-      const duration = performance.now() - startTime;
-
-      return {
-        delta: this.createEmptyDelta(),
-        duration,
-        totalProperties: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
+      return calculateArrayDelta(oldObject, newObject, options, visited);
+    } finally {
+      // 処理完了後にvisitedから削除
+      visited.delete(oldObject as Record<string, unknown>);
+      visited.delete(newObject as Record<string, unknown>);
     }
   }
 
-  /**
-   * 差分を計算する内部メソッド
-   */
-  private calculateDelta(oldObject: unknown, newObject: unknown, visited = new WeakSet()): ObjectDelta {
-    // 循環参照の検出
-    if (isObject(oldObject) && visited.has(oldObject)) {
-      throw new Error('Circular reference detected');
+  // オブジェクトの比較
+  if (isObject(oldObject) && isObject(newObject)) {
+    // オブジェクトをvisitedに追加
+    visited.add(oldObject as Record<string, unknown>);
+    visited.add(newObject as Record<string, unknown>);
+    
+    try {
+      return calculateObjectDeltaInternal(
+        oldObject as Record<string, unknown>,
+        newObject as Record<string, unknown>,
+        options,
+        visited,
+      );
+    } finally {
+      // 処理完了後にvisitedから削除
+      visited.delete(oldObject as Record<string, unknown>);
+      visited.delete(newObject as Record<string, unknown>);
     }
-    if (isObject(newObject) && visited.has(newObject)) {
-      throw new Error('Circular reference detected');
-    }
-
-    // プリミティブ値の比較
-    if (isPrimitive(oldObject) || isPrimitive(newObject)) {
-      return this.calculatePrimitiveDelta(oldObject, newObject);
-    }
-
-    // 配列の比較
-    if (isArray(oldObject) && isArray(newObject)) {
-      return this.calculateArrayDelta(oldObject, newObject, visited);
-    }
-
-    // オブジェクトの比較
-    if (isObject(oldObject) && isObject(newObject)) {
-      return this.calculateObjectDelta(oldObject, newObject, visited);
-    }
-
-    // 型が異なる場合
-    return this.calculateTypeChangeDelta(oldObject, newObject);
   }
 
-  /**
-   * プリミティブ値の差分を計算
-   */
-  private calculatePrimitiveDelta(
-    oldValue: unknown,
-    newValue: unknown,
-  ): ObjectDelta {
-    const changes: Record<string, PropertyChange> = {};
+  // 型が異なる場合
+  return calculateTypeChangeDelta(oldObject, newObject);
+}
 
-    if (oldValue !== newValue) {
-      // 型が異なる場合は型変更として扱う
-      if (typeof oldValue !== typeof newValue) {
-        changes['__type__'] = {
-          type: 'modified',
-          oldValue: typeof oldValue,
-          newValue: typeof newValue,
-        };
-      }
-      
-      changes['__value__'] = {
+/**
+ * プリミティブ値の差分を計算
+ */
+function calculatePrimitiveDelta(
+  oldValue: unknown,
+  newValue: unknown,
+): ObjectDelta {
+  const changes: Record<string, PropertyChange> = {};
+
+  if (oldValue !== newValue) {
+    // 型が異なる場合は型変更として扱う
+    if (typeof oldValue !== typeof newValue) {
+      changes['__type__'] = {
         type: 'modified',
-        oldValue,
-        newValue,
+        oldValue: typeof oldValue,
+        newValue: typeof newValue,
       };
     }
-
-    return this.createDeltaFromChanges(changes);
-  }
-
-  /**
-   * 配列の差分を計算
-   */
-  private calculateArrayDelta(
-    oldArray: unknown[],
-    newArray: unknown[],
-    visited = new WeakSet(),
-  ): ObjectDelta {
-    const changes: Record<string, PropertyChange> = {};
-
-    if (!this.options.arrayOrderMatters) {
-      // 順序を考慮しない場合の簡易比較
-      if (oldArray.length !== newArray.length) {
-        changes['__length__'] = {
-          type: 'modified',
-          oldValue: oldArray.length,
-          newValue: newArray.length,
-        };
-      }
-      return this.createDeltaFromChanges(changes);
-    }
-
-    // 順序を考慮した詳細比較
-    const maxLength = Math.max(oldArray.length, newArray.length);
-
-    for (let i = 0; i < maxLength; i++) {
-      const oldItem = oldArray[i];
-      const newItem = newArray[i];
-
-      if (i >= oldArray.length) {
-        // 新しいアイテムが追加された
-        changes[`[${i}]`] = {
-          type: 'added',
-          newValue: newItem,
-        };
-      } else if (i >= newArray.length) {
-        // アイテムが削除された
-        changes[`[${i}]`] = {
-          type: 'removed',
-          oldValue: oldItem,
-        };
-      } else if (!this.areValuesEqual(oldItem, newItem, visited)) {
-        // アイテムが変更された
-        const nestedDelta = this.options.deep
-          ? this.calculateDelta(oldItem, newItem, visited)
-          : undefined;
-
-        changes[`[${i}]`] = {
-          type: 'modified',
-          oldValue: oldItem,
-          newValue: newItem,
-          nestedDelta,
-        };
-      }
-    }
-
-    return this.createDeltaFromChanges(changes);
-  }
-
-  /**
-   * オブジェクトの差分を計算
-   */
-  private calculateObjectDelta(
-    oldObject: Record<string, unknown>,
-    newObject: Record<string, unknown>,
-    visited = new WeakSet(),
-  ): ObjectDelta {
-    const changes: Record<string, PropertyChange> = {};
-    const allKeys = new Set([
-      ...Object.keys(oldObject),
-      ...Object.keys(newObject),
-    ]);
-
-    for (const key of allKeys) {
-      // 無視するプロパティをスキップ
-      if (this.options.ignoreProperties.includes(key)) {
-        continue;
-      }
-
-      const oldValue = oldObject[key];
-      const newValue = newObject[key];
-
-      // カスタム比較関数を使用
-      if (this.options.customComparator(key, oldValue, newValue)) {
-        continue;
-      }
-
-      if (!(key in oldObject)) {
-        // プロパティが追加された
-        changes[key] = {
-          type: 'added',
-          newValue,
-        };
-      } else if (!(key in newObject)) {
-        // プロパティが削除された
-        changes[key] = {
-          type: 'removed',
-          oldValue,
-        };
-      } else if (!this.areValuesEqual(oldValue, newValue, visited)) {
-        // プロパティが変更された
-        const nestedDelta = this.options.deep
-          ? this.calculateDelta(oldValue, newValue, visited)
-          : undefined;
-
-        changes[key] = {
-          type: 'modified',
-          oldValue,
-          newValue,
-          nestedDelta,
-        };
-      }
-    }
-
-    return this.createDeltaFromChanges(changes);
-  }
-
-  /**
-   * 型変更の差分を計算
-   */
-  private calculateTypeChangeDelta(
-    oldValue: unknown,
-    newValue: unknown,
-  ): ObjectDelta {
-    const changes: Record<string, PropertyChange> = {};
-
-    changes['__type__'] = {
-      type: 'modified',
-      oldValue: typeof oldValue,
-      newValue: typeof newValue,
-    };
 
     changes['__value__'] = {
       type: 'modified',
       oldValue,
       newValue,
     };
-
-    return this.createDeltaFromChanges(changes);
   }
 
-  /**
-   * 2つの値が等しいかどうかを判定
-   */
-  private areValuesEqual(oldValue: unknown, newValue: unknown, visited = new WeakSet()): boolean {
-    // 厳密等価性チェック
-    if (oldValue === newValue) {
-      return true;
-    }
+  return createDeltaFromChanges(changes);
+}
 
-    // null/undefined のチェック
-    if (oldValue == null || newValue == null) {
-      return oldValue === newValue;
-    }
+/**
+ * 配列の差分を計算
+ */
+function calculateArrayDelta(
+  oldArray: unknown[],
+  newArray: unknown[],
+  options: Required<DeltaCalculationOptions>,
+  visited = new WeakSet(),
+): ObjectDelta {
+  const changes: Record<string, PropertyChange> = {};
 
-    // 循環参照の検出
-    if (isObject(oldValue) && visited.has(oldValue)) {
-      throw new Error('Circular reference detected');
+  if (!options.arrayOrderMatters) {
+    // 順序を考慮しない場合の簡易比較
+    if (oldArray.length !== newArray.length) {
+      changes['__length__'] = {
+        type: 'modified',
+        oldValue: oldArray.length,
+        newValue: newArray.length,
+      };
     }
-
-    // オブジェクトの深い比較
-    if (this.options.deep && isObject(oldValue) && isObject(newValue)) {
-      visited.add(oldValue);
-      try {
-        const delta = this.calculateDelta(oldValue, newValue);
-        return delta.changeCount === 0;
-      } finally {
-        visited.delete(oldValue);
-      }
-    }
-
-    return false;
+    return createDeltaFromChanges(changes);
   }
 
-  /**
-   * 変更情報からObjectDeltaを作成
-   */
-  private createDeltaFromChanges(
-    changes: Record<string, PropertyChange>,
-  ): ObjectDelta {
-    const addedCount = Object.values(changes).filter(
-      (c) => c.type === 'added',
-    ).length;
-    const removedCount = Object.values(changes).filter(
-      (c) => c.type === 'removed',
-    ).length;
-    const modifiedCount = Object.values(changes).filter(
-      (c) => c.type === 'modified',
-    ).length;
+  // 順序を考慮した詳細比較
+  const maxLength = Math.max(oldArray.length, newArray.length);
 
-    return {
-      changes,
-      changeCount: addedCount + removedCount + modifiedCount,
-      addedCount,
-      removedCount,
-      modifiedCount,
-    };
+  for (let i = 0; i < maxLength; i++) {
+    const oldItem = oldArray[i];
+    const newItem = newArray[i];
+
+    if (i >= oldArray.length) {
+      // 新しいアイテムが追加された
+      changes[`[${i}]`] = {
+        type: 'added',
+        newValue: newItem,
+      };
+    } else if (i >= newArray.length) {
+      // アイテムが削除された
+      changes[`[${i}]`] = {
+        type: 'removed',
+        oldValue: oldItem,
+      };
+    } else if (!areValuesEqual(oldItem, newItem, options, visited)) {
+      // アイテムが変更された
+      const nestedDelta = options.deep
+        ? calculateDelta(oldItem, newItem, options, visited)
+        : undefined;
+
+      changes[`[${i}]`] = {
+        type: 'modified',
+        oldValue: oldItem,
+        newValue: newItem,
+        nestedDelta,
+      };
+    }
   }
 
-  /**
-   * 空の差分を作成
-   */
-  private createEmptyDelta(): ObjectDelta {
-    return {
-      changes: {},
-      changeCount: 0,
-      addedCount: 0,
-      removedCount: 0,
-      modifiedCount: 0,
-    };
-  }
+  return createDeltaFromChanges(changes);
+}
 
-  /**
-   * 総プロパティ数をカウント
-   */
-  private countTotalProperties(oldObject: unknown, newObject: unknown): number {
-    let count = 0;
+/**
+ * オブジェクトの差分を計算
+ */
+function calculateObjectDeltaInternal(
+  oldObject: Record<string, unknown>,
+  newObject: Record<string, unknown>,
+  options: Required<DeltaCalculationOptions>,
+  visited = new WeakSet(),
+): ObjectDelta {
+  const changes: Record<string, PropertyChange> = {};
+  const allKeys = new Set([
+    ...Object.keys(oldObject),
+    ...Object.keys(newObject),
+  ]);
 
-    if (isObject(oldObject)) {
-      count += Object.keys(oldObject).length;
+  for (const key of allKeys) {
+    // 無視するプロパティをスキップ
+    if (options.ignoreProperties.includes(key)) {
+      continue;
     }
 
-    if (isObject(newObject)) {
-      count += Object.keys(newObject).length;
+    const oldValue = oldObject[key];
+    const newValue = newObject[key];
+
+    // カスタム比較関数を使用
+    if (options.customComparator(key, oldValue, newValue)) {
+      continue;
     }
 
-    return count;
+    if (!(key in oldObject)) {
+      // プロパティが追加された
+      changes[key] = {
+        type: 'added',
+        newValue,
+      };
+    } else if (!(key in newObject)) {
+      // プロパティが削除された
+      changes[key] = {
+        type: 'removed',
+        oldValue,
+      };
+    } else if (!areValuesEqual(oldValue, newValue, options, visited)) {
+      // プロパティが変更された
+      const nestedDelta = options.deep
+        ? calculateDelta(oldValue, newValue, options, visited)
+        : undefined;
+
+      changes[key] = {
+        type: 'modified',
+        oldValue,
+        newValue,
+        nestedDelta,
+      };
+    }
   }
+
+  return createDeltaFromChanges(changes);
+}
+
+/**
+ * 型変更の差分を計算
+ */
+function calculateTypeChangeDelta(
+  oldValue: unknown,
+  newValue: unknown,
+): ObjectDelta {
+  const changes: Record<string, PropertyChange> = {};
+
+  changes['__type__'] = {
+    type: 'modified',
+    oldValue: typeof oldValue,
+    newValue: typeof newValue,
+  };
+
+  changes['__value__'] = {
+    type: 'modified',
+    oldValue,
+    newValue,
+  };
+
+  return createDeltaFromChanges(changes);
+}
+
+/**
+ * 2つの値が等しいかどうかを判定
+ */
+function areValuesEqual(
+  oldValue: unknown,
+  newValue: unknown,
+  options: Required<DeltaCalculationOptions>,
+  visited = new WeakSet(),
+): boolean {
+  // 厳密等価性チェック
+  if (oldValue === newValue) {
+    return true;
+  }
+
+  // null/undefined のチェック
+  if (oldValue == null || newValue == null) {
+    return oldValue === newValue;
+  }
+
+   // 循環参照の検出
+   if (isObject(oldValue) && visited.has(oldValue as Record<string, unknown>)) {
+     throw new CircularReferenceError('oldValue');
+   }
+
+  // オブジェクトの深い比較
+  if (options.deep && isObject(oldValue) && isObject(newValue)) {
+    visited.add(oldValue as Record<string, unknown>);
+    try {
+      const delta = calculateDelta(oldValue, newValue, options);
+      return delta.changeCount === 0;
+    } finally {
+      visited.delete(oldValue as Record<string, unknown>);
+    }
+  }
+
+  return false;
+}
+
+/**
+ * 変更情報からObjectDeltaを作成
+ */
+function createDeltaFromChanges(
+  changes: Record<string, PropertyChange>,
+): ObjectDelta {
+  const addedCount = Object.values(changes).filter(
+    (c) => c.type === 'added',
+  ).length;
+  const removedCount = Object.values(changes).filter(
+    (c) => c.type === 'removed',
+  ).length;
+  const modifiedCount = Object.values(changes).filter(
+    (c) => c.type === 'modified',
+  ).length;
+
+  return {
+    changes,
+    changeCount: addedCount + removedCount + modifiedCount,
+    addedCount,
+    removedCount,
+    modifiedCount,
+  };
+}
+
+/**
+ * 空の差分を作成
+ */
+function createEmptyDelta(): ObjectDelta {
+  return {
+    changes: {},
+    changeCount: 0,
+    addedCount: 0,
+    removedCount: 0,
+    modifiedCount: 0,
+  };
+}
+
+/**
+ * 総プロパティ数をカウント
+ */
+function countTotalProperties(oldObject: unknown, newObject: unknown): number {
+  let count = 0;
+
+  if (isObject(oldObject)) {
+    count += Object.keys(oldObject as Record<string, unknown>).length;
+  }
+
+  if (isObject(newObject)) {
+    count += Object.keys(newObject as Record<string, unknown>).length;
+  }
+
+  return count;
 }
