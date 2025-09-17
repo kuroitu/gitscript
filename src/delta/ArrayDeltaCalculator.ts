@@ -7,7 +7,6 @@
  * 順序を考慮する/しないオプションをサポートします。
  */
 
-import microdiff from 'microdiff';
 import {
   ChangeKey,
   DeltaCalculationOptions,
@@ -16,6 +15,11 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types/ObjectDelta';
+import {
+  calculateArrayDiff,
+  getFirstKey,
+  type MicrodiffChange,
+} from './MicrodiffWrapper';
 
 /**
  * 配列の差分を計算します
@@ -41,11 +45,20 @@ export function calculateArrayDelta(
     };
 
     // microdiffで差分を計算
-    const microdiffResult = microdiff(oldArray as any, newArray as any, microdiffOptions);
-    
+    const microdiffResult = calculateArrayDiff(
+      oldArray,
+      newArray,
+      microdiffOptions,
+    );
+
     // ObjectDelta形式に変換
-    const delta = convertArrayDiffToObjectDelta(microdiffResult, oldArray, newArray, options);
-    
+    const delta = convertArrayDiffToObjectDelta(
+      microdiffResult,
+      oldArray,
+      newArray,
+      options,
+    );
+
     const duration = performance.now() - startTime;
 
     return {
@@ -69,10 +82,11 @@ export function calculateArrayDelta(
  * 配列の差分をObjectDelta形式に変換
  */
 function convertArrayDiffToObjectDelta(
-  microdiffResult: any[],
+  microdiffResult: MicrodiffChange[],
   oldArray: unknown[],
   newArray: unknown[],
-  options: DeltaCalculationOptions,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _options: DeltaCalculationOptions,
 ): ObjectDelta {
   const changes: Record<ChangeKey, PropertyChange> = {};
 
@@ -109,7 +123,7 @@ function convertArrayPathToChangeKey(path: (string | number)[]): ChangeKey {
   }
 
   // ネストした配列の場合は最初のインデックスのみを使用
-  const firstKey = path[0];
+  const firstKey = getFirstKey(path);
   if (typeof firstKey === 'number') {
     return `[${firstKey}]`;
   }
@@ -120,7 +134,7 @@ function convertArrayPathToChangeKey(path: (string | number)[]): ChangeKey {
 /**
  * microdiffの変更をPropertyChangeに変換
  */
-function convertMicrodiffChangeToPropertyChange(change: any): PropertyChange {
+function convertMicrodiffChangeToPropertyChange(change: MicrodiffChange): PropertyChange {
   switch (change.type) {
     case 'CREATE':
       return {

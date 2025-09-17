@@ -10,6 +10,21 @@ export { calculateObjectDelta } from './ObjectDeltaCalculator';
 export { calculateArrayDelta } from './ArrayDeltaCalculator';
 export { calculateSetDelta, calculateMapDelta } from './SetMapDeltaCalculator';
 
+// microdiffラッパーのエクスポート
+export {
+  calculateDiff,
+  calculateObjectDiff,
+  calculateArrayDiff,
+  isValidChange,
+  filterValidChanges,
+  pathToString,
+  getLastKey,
+  getFirstKey,
+  type MicrodiffChange,
+  type MicrodiffOptions,
+  type MicrodiffResult,
+} from './MicrodiffWrapper';
+
 // 型定義の再エクスポート
 export type {
   DeltaCalculationOptions,

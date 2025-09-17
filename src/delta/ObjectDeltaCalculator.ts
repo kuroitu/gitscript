@@ -15,7 +15,11 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types/ObjectDelta';
-import microdiff from 'microdiff';
+import {
+  calculateObjectDiff,
+  getLastKey,
+  type MicrodiffChange,
+} from './MicrodiffWrapper';
 
 /**
  * 2つのオブジェクト間の差分を計算します
@@ -46,9 +50,9 @@ export function calculateObjectDelta(
     };
 
     // microdiffで差分を計算
-    const microdiffResult = microdiff(
-      oldObject as any,
-      newObject as any,
+    const microdiffResult = calculateObjectDiff(
+      oldObject as Record<string, unknown>,
+      newObject as Record<string, unknown>,
       microdiffOptions,
     );
 
@@ -114,7 +118,9 @@ function calculatePrimitiveDelta(
 /**
  * microdiffの結果をObjectDelta形式に変換
  */
-function convertMicrodiffToObjectDelta(microdiffResult: any[]): ObjectDelta {
+function convertMicrodiffToObjectDelta(
+  microdiffResult: MicrodiffChange[],
+): ObjectDelta {
   const changes: Record<ChangeKey, PropertyChange> = {};
 
   for (const change of microdiffResult) {
@@ -145,7 +151,7 @@ function convertPathToChangeKey(path: (string | number)[]): ChangeKey {
   }
 
   // ネストしたパスの場合は最後の要素を使用
-  const lastKey = path[path.length - 1];
+  const lastKey = getLastKey(path);
   if (typeof lastKey === 'number') {
     return `[${lastKey}]`;
   }
@@ -155,7 +161,7 @@ function convertPathToChangeKey(path: (string | number)[]): ChangeKey {
 /**
  * microdiffの変更をPropertyChangeに変換
  */
-function convertMicrodiffChangeToPropertyChange(change: any): PropertyChange {
+function convertMicrodiffChangeToPropertyChange(change: MicrodiffChange): PropertyChange {
   switch (change.type) {
     case 'CREATE':
       return {

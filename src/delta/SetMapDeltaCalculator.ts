@@ -6,7 +6,6 @@
  * Set/Mapをオブジェクトに変換してmicrodiffで差分を計算します。
  */
 
-import microdiff from 'microdiff';
 import {
   ChangeKey,
   DeltaCalculationOptions,
@@ -15,6 +14,11 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types/ObjectDelta';
+import {
+  calculateObjectDiff,
+  getFirstKey,
+  type MicrodiffChange,
+} from './MicrodiffWrapper';
 
 /**
  * Setの差分を計算します
@@ -37,15 +41,23 @@ export function calculateSetDelta(
     const newObj = setToObject(newSet);
 
     // microdiffで差分を計算
-    const microdiffResult = microdiff(oldObj as any, newObj as any, {
-      cyclesFix: true,
-      ignoreArrays: true,
-      ignoreKeys: options.ignoreProperties,
-    });
+    const microdiffResult = calculateObjectDiff(
+      oldObj,
+      newObj,
+      {
+        cyclesFix: true,
+        ignoreArrays: true,
+        ignoreKeys: options.ignoreProperties,
+      },
+    );
 
     // ObjectDelta形式に変換
-    const delta = convertSetMapDiffToObjectDelta(microdiffResult, oldSet, newSet);
-    
+    const delta = convertSetMapDiffToObjectDelta(
+      microdiffResult,
+      oldSet,
+      newSet,
+    );
+
     const duration = performance.now() - startTime;
 
     return {
@@ -86,15 +98,23 @@ export function calculateMapDelta(
     const newObj = mapToObject(newMap);
 
     // microdiffで差分を計算
-    const microdiffResult = microdiff(oldObj as any, newObj as any, {
-      cyclesFix: true,
-      ignoreArrays: true,
-      ignoreKeys: options.ignoreProperties,
-    });
+    const microdiffResult = calculateObjectDiff(
+      oldObj,
+      newObj,
+      {
+        cyclesFix: true,
+        ignoreArrays: true,
+        ignoreKeys: options.ignoreProperties,
+      },
+    );
 
     // ObjectDelta形式に変換
-    const delta = convertSetMapDiffToObjectDelta(microdiffResult, oldMap, newMap);
-    
+    const delta = convertSetMapDiffToObjectDelta(
+      microdiffResult,
+      oldMap,
+      newMap,
+    );
+
     const duration = performance.now() - startTime;
 
     return {
@@ -143,7 +163,7 @@ function mapToObject(map: Map<unknown, unknown>): Record<string, unknown> {
  * Set/Mapの差分をObjectDelta形式に変換
  */
 function convertSetMapDiffToObjectDelta(
-  microdiffResult: any[],
+  microdiffResult: MicrodiffChange[],
   oldCollection: Set<unknown> | Map<unknown, unknown>,
   newCollection: Set<unknown> | Map<unknown, unknown>,
 ): ObjectDelta {
@@ -177,14 +197,14 @@ function convertSetMapPathToChangeKey(path: (string | number)[]): ChangeKey {
   }
 
   // 最初の要素をキーとして使用
-  const firstKey = path[0];
+  const firstKey = getFirstKey(path);
   return String(firstKey);
 }
 
 /**
  * microdiffの変更をPropertyChangeに変換
  */
-function convertMicrodiffChangeToPropertyChange(change: any): PropertyChange {
+function convertMicrodiffChangeToPropertyChange(change: MicrodiffChange): PropertyChange {
   switch (change.type) {
     case 'CREATE':
       return {
