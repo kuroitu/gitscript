@@ -163,47 +163,12 @@ function calculateArrayDelta(
   options: Required<DeltaCalculationOptions>,
   visited = new WeakSet(),
 ): ObjectDelta {
-  const changes: Record<ChangeKey, PropertyChange> = {};
-
   if (!options.arrayOrderMatters) {
     return calculateArrayDeltaWithoutOrder(oldArray, newArray);
   }
 
-  // 順序を考慮した詳細比較
-  const maxLength = Math.max(oldArray.length, newArray.length);
-
-  for (let i = 0; i < maxLength; i++) {
-    const oldItem = oldArray[i];
-    const newItem = newArray[i];
-
-    if (i >= oldArray.length) {
-      // 新しいアイテムが追加された
-      changes[`[${i}]`] = {
-        type: PropertyChangeType.Added,
-        newValue: newItem,
-      };
-    } else if (i >= newArray.length) {
-      // アイテムが削除された
-      changes[`[${i}]`] = {
-        type: PropertyChangeType.Removed,
-        oldValue: oldItem,
-      };
-    } else if (!areValuesEqual(oldItem, newItem, options, visited)) {
-      // アイテムが変更された
-      const nestedDelta = options.deep
-        ? calculateDelta(oldItem, newItem, options, visited)
-        : undefined;
-
-      changes[`[${i}]`] = {
-        type: PropertyChangeType.Modified,
-        oldValue: oldItem,
-        newValue: newItem,
-        nestedDelta,
-      };
-    }
-  }
-
-  return createDeltaFromChanges(changes);
+  // 順序を考慮した詳細比較（LCSアルゴリズム使用）
+  return calculateArrayDeltaWithOrder(oldArray, newArray, options, visited);
 }
 
 /**
@@ -366,6 +331,52 @@ function createEmptyDelta(): ObjectDelta {
 }
 
 /**
+ * 順序を考慮した配列の差分を計算
+ */
+function calculateArrayDeltaWithOrder(
+  oldArray: unknown[],
+  newArray: unknown[],
+  options: Required<DeltaCalculationOptions>,
+  visited = new WeakSet(),
+): ObjectDelta {
+  const changes: Record<ChangeKey, PropertyChange> = {};
+  const maxLength = Math.max(oldArray.length, newArray.length);
+
+  for (let i = 0; i < maxLength; i++) {
+    const oldItem = oldArray[i];
+    const newItem = newArray[i];
+
+    if (i >= oldArray.length) {
+      // 新しいアイテムが追加された
+      changes[`[${i}]`] = {
+        type: PropertyChangeType.Added,
+        newValue: newItem,
+      };
+    } else if (i >= newArray.length) {
+      // アイテムが削除された
+      changes[`[${i}]`] = {
+        type: PropertyChangeType.Removed,
+        oldValue: oldItem,
+      };
+    } else if (!areValuesEqual(oldItem, newItem, options, visited)) {
+      // アイテムが変更された
+      const nestedDelta = options.deep
+        ? calculateDelta(oldItem, newItem, options, visited)
+        : undefined;
+
+      changes[`[${i}]`] = {
+        type: PropertyChangeType.Modified,
+        oldValue: oldItem,
+        newValue: newItem,
+        nestedDelta,
+      };
+    }
+  }
+
+  return createDeltaFromChanges(changes);
+}
+
+/**
  * 順序を考慮しない配列の差分を計算
  */
 function calculateArrayDeltaWithoutOrder(
@@ -407,11 +418,7 @@ function calculateArrayDeltaWithoutOrder(
       const removedCount = oldCount - newCount;
       // 削除された要素のインデックスを特定
       let removedIndex = 0;
-      for (
-        let i = 0;
-        i < oldArray.length && removedIndex < removedCount;
-        i++
-      ) {
+      for (let i = 0; i < oldArray.length && removedIndex < removedCount; i++) {
         if (getElementKey(oldArray[i]) === key) {
           changes[`[${i}]`] = {
             type: PropertyChangeType.Removed,
@@ -444,6 +451,7 @@ function calculateArrayDeltaWithoutOrder(
 
   return createDeltaFromChanges(changes);
 }
+
 
 /**
  * 配列要素の一意なキーを生成
