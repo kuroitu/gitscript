@@ -268,6 +268,100 @@ describe('calculateObjectDelta', () => {
     });
   });
 
+  describe('配列の差分計算', () => {
+    it('順序を考慮した配列の差分計算', () => {
+      const oldArray = [1, 2, 3];
+      const newArray = [1, 4, 3, 5];
+      const result = calculateObjectDelta(oldArray, newArray);
+
+      expect(result.delta.changeCount).toBe(2);
+      expect(result.delta.modifiedCount).toBe(1); // [1] が 2 -> 4 に変更
+      expect(result.delta.addedCount).toBe(1); // [3] に 5 が追加
+
+      const change1 = result.delta.changes['[1]'];
+      expect(change1.type).toBe('modified');
+      expect(change1.oldValue).toBe(2);
+      expect(change1.newValue).toBe(4);
+
+      const change2 = result.delta.changes['[3]'];
+      expect(change2.type).toBe('added');
+      expect(change2.newValue).toBe(5);
+    });
+
+    it('順序を考慮しない配列の差分計算 - 要素の追加', () => {
+      const oldArray = [1, 2, 3];
+      const newArray = [1, 2, 3, 4];
+      const result = calculateObjectDelta(oldArray, newArray, {
+        arrayOrderMatters: false,
+      });
+
+      expect(result.delta.changeCount).toBe(2);
+      expect(result.delta.addedCount).toBe(1); // 4 が追加
+      expect(result.delta.modifiedCount).toBe(1); // 長さが変更
+
+      const lengthChange = result.delta.changes['__length__'];
+      expect(lengthChange.type).toBe('modified');
+      expect(lengthChange.oldValue).toBe(3);
+      expect(lengthChange.newValue).toBe(4);
+
+      const addedChange = result.delta.changes['[3]'];
+      expect(addedChange.type).toBe('added');
+      expect(addedChange.newValue).toBe(4);
+    });
+
+    it('順序を考慮しない配列の差分計算 - 要素の削除', () => {
+      const oldArray = [1, 2, 3, 4];
+      const newArray = [1, 2, 3];
+      const result = calculateObjectDelta(oldArray, newArray, {
+        arrayOrderMatters: false,
+      });
+
+      expect(result.delta.changeCount).toBe(2);
+      expect(result.delta.removedCount).toBe(1); // 4 が削除
+      expect(result.delta.modifiedCount).toBe(1); // 長さが変更
+
+      const lengthChange = result.delta.changes['__length__'];
+      expect(lengthChange.type).toBe('modified');
+      expect(lengthChange.oldValue).toBe(4);
+      expect(lengthChange.newValue).toBe(3);
+
+      const removedChange = result.delta.changes['[3]'];
+      expect(removedChange.type).toBe('removed');
+      expect(removedChange.oldValue).toBe(4);
+    });
+
+    it('順序を考慮しない配列の差分計算 - 重複要素の処理', () => {
+      const oldArray = [1, 2, 2, 3];
+      const newArray = [1, 2, 3];
+      const result = calculateObjectDelta(oldArray, newArray, {
+        arrayOrderMatters: false,
+      });
+
+      expect(result.delta.changeCount).toBe(2);
+      expect(result.delta.removedCount).toBe(1); // 2 が1つ削除
+      expect(result.delta.modifiedCount).toBe(1); // 長さが変更
+
+      const lengthChange = result.delta.changes['__length__'];
+      expect(lengthChange.type).toBe('modified');
+      expect(lengthChange.oldValue).toBe(4);
+      expect(lengthChange.newValue).toBe(3);
+    });
+
+    it('順序を考慮しない配列の差分計算 - 同じ要素の並び替え', () => {
+      const oldArray = [1, 2, 3];
+      const newArray = [3, 1, 2];
+      const result = calculateObjectDelta(oldArray, newArray, {
+        arrayOrderMatters: false,
+      });
+
+      // 要素は同じなので、長さの変更のみ
+      expect(result.delta.changeCount).toBe(0);
+      expect(result.delta.addedCount).toBe(0);
+      expect(result.delta.removedCount).toBe(0);
+      expect(result.delta.modifiedCount).toBe(0);
+    });
+  });
+
   describe('パフォーマンスとエラーハンドリング', () => {
     it('計算時間を正しく記録する', () => {
       const result = calculateObjectDelta({ a: 1 }, { a: 2 });

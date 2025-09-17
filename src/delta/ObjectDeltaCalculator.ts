@@ -11,6 +11,7 @@ import { isArray, isNativeError, isObject, isPrimitive } from '@/core/utils';
 import { CircularReferenceError } from '@/types/Errors';
 import {
   ChangeKey,
+  ChangeSpecialKey,
   DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
@@ -136,14 +137,14 @@ function calculatePrimitiveDelta(
   if (oldValue !== newValue) {
     // 型が異なる場合は型変更として扱う
     if (typeof oldValue !== typeof newValue) {
-      changes['__type__'] = {
+      changes[ChangeSpecialKey.Type] = {
         type: PropertyChangeType.Modified,
         oldValue: typeof oldValue,
         newValue: typeof newValue,
       };
     }
 
-    changes['__value__'] = {
+    changes[ChangeSpecialKey.Value] = {
       type: PropertyChangeType.Modified,
       oldValue,
       newValue,
@@ -165,14 +166,71 @@ function calculateArrayDelta(
   const changes: Record<ChangeKey, PropertyChange> = {};
 
   if (!options.arrayOrderMatters) {
-    // 順序を考慮しない場合の簡易比較
+    // 順序を考慮しない場合の比較
+    // 長さの変更をチェック
     if (oldArray.length !== newArray.length) {
-      changes['__length__'] = {
+      changes[ChangeSpecialKey.Length] = {
         type: PropertyChangeType.Modified,
         oldValue: oldArray.length,
         newValue: newArray.length,
       };
     }
+
+    // 各要素の存在と変更をチェック
+    // 重複を考慮した要素のカウント
+    const oldElementCounts = new Map<string, number>();
+    const newElementCounts = new Map<string, number>();
+
+    // 古い配列の要素をカウント
+    for (const oldItem of oldArray) {
+      const key = getElementKey(oldItem);
+      oldElementCounts.set(key, (oldElementCounts.get(key) || 0) + 1);
+    }
+
+    // 新しい配列の要素をカウント
+    for (const newItem of newArray) {
+      const key = getElementKey(newItem);
+      newElementCounts.set(key, (newElementCounts.get(key) || 0) + 1);
+    }
+
+    // 削除された要素を検出
+    for (const [key, oldCount] of oldElementCounts) {
+      const newCount = newElementCounts.get(key) || 0;
+      if (oldCount > newCount) {
+        const removedCount = oldCount - newCount;
+        // 削除された要素のインデックスを特定
+        let removedIndex = 0;
+        for (let i = 0; i < oldArray.length && removedIndex < removedCount; i++) {
+          if (getElementKey(oldArray[i]) === key) {
+            changes[`[${i}]`] = {
+              type: PropertyChangeType.Removed,
+              oldValue: oldArray[i],
+            };
+            removedIndex++;
+          }
+        }
+      }
+    }
+
+    // 追加された要素を検出
+    for (const [key, newCount] of newElementCounts) {
+      const oldCount = oldElementCounts.get(key) || 0;
+      if (newCount > oldCount) {
+        const addedCount = newCount - oldCount;
+        // 追加された要素のインデックスを特定
+        let addedIndex = 0;
+        for (let i = 0; i < newArray.length && addedIndex < addedCount; i++) {
+          if (getElementKey(newArray[i]) === key) {
+            changes[`[${i}]`] = {
+              type: PropertyChangeType.Added,
+              newValue: newArray[i],
+            };
+            addedIndex++;
+          }
+        }
+      }
+    }
+
     return createDeltaFromChanges(changes);
   }
 
@@ -281,13 +339,13 @@ function calculateTypeChangeDelta(
 ): ObjectDelta {
   const changes: Record<ChangeKey, PropertyChange> = {};
 
-  changes['__type__'] = {
+  changes[ChangeSpecialKey.Type] = {
     type: PropertyChangeType.Modified,
     oldValue: typeof oldValue,
     newValue: typeof newValue,
   };
 
-  changes['__value__'] = {
+  changes[ChangeSpecialKey.Value] = {
     type: PropertyChangeType.Modified,
     oldValue,
     newValue,
@@ -370,6 +428,26 @@ function createEmptyDelta(): ObjectDelta {
     removedCount: 0,
     modifiedCount: 0,
   };
+}
+
+/**
+ * 配列要素の一意なキーを生成
+ */
+function getElementKey(element: unknown): string {
+  if (isPrimitive(element)) {
+    return `${typeof element}:${String(element)}`;
+  }
+  
+  if (isArray(element)) {
+    return `array:${element.length}`;
+  }
+  
+  if (isObject(element)) {
+    const keys = Object.keys(element as UnknownValueObject).sort();
+    return `object:${keys.join(',')}`;
+  }
+  
+  return `unknown:${String(element)}`;
 }
 
 /**

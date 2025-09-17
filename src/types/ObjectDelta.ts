@@ -35,6 +35,20 @@ export interface PropertyChange {
 }
 
 /**
+ * 特殊な変更キー
+ */
+export const ChangeSpecialKey = {
+  /** 型変更 */
+  Type: '__type__',
+  /** 値変更 */
+  Value: '__value__',
+  /** 配列長変更 */
+  Length: '__length__',
+} as const;
+export type ChangeSpecialKey =
+  (typeof ChangeSpecialKey)[keyof typeof ChangeSpecialKey];
+
+/**
  * 変更情報のキー
  *
  * 実際に使用されるキーの型を定義
@@ -42,9 +56,7 @@ export interface PropertyChange {
 export type ChangeKey =
   | string // 通常のプロパティ名
   | `[${number}]` // 配列インデックス
-  | '__type__' // 型変更
-  | '__value__' // 値変更
-  | '__length__'; // 配列長変更
+  | ChangeSpecialKey;
 
 /**
  * オブジェクト差分
