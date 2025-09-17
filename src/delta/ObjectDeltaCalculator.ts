@@ -166,72 +166,7 @@ function calculateArrayDelta(
   const changes: Record<ChangeKey, PropertyChange> = {};
 
   if (!options.arrayOrderMatters) {
-    // 順序を考慮しない場合の比較
-    // 長さの変更をチェック
-    if (oldArray.length !== newArray.length) {
-      changes[ChangeSpecialKey.Length] = {
-        type: PropertyChangeType.Modified,
-        oldValue: oldArray.length,
-        newValue: newArray.length,
-      };
-    }
-
-    // 各要素の存在と変更をチェック
-    // 重複を考慮した要素のカウント
-    const oldElementCounts = new Map<string, number>();
-    const newElementCounts = new Map<string, number>();
-
-    // 古い配列の要素をカウント
-    for (const oldItem of oldArray) {
-      const key = getElementKey(oldItem);
-      oldElementCounts.set(key, (oldElementCounts.get(key) || 0) + 1);
-    }
-
-    // 新しい配列の要素をカウント
-    for (const newItem of newArray) {
-      const key = getElementKey(newItem);
-      newElementCounts.set(key, (newElementCounts.get(key) || 0) + 1);
-    }
-
-    // 削除された要素を検出
-    for (const [key, oldCount] of oldElementCounts) {
-      const newCount = newElementCounts.get(key) || 0;
-      if (oldCount > newCount) {
-        const removedCount = oldCount - newCount;
-        // 削除された要素のインデックスを特定
-        let removedIndex = 0;
-        for (let i = 0; i < oldArray.length && removedIndex < removedCount; i++) {
-          if (getElementKey(oldArray[i]) === key) {
-            changes[`[${i}]`] = {
-              type: PropertyChangeType.Removed,
-              oldValue: oldArray[i],
-            };
-            removedIndex++;
-          }
-        }
-      }
-    }
-
-    // 追加された要素を検出
-    for (const [key, newCount] of newElementCounts) {
-      const oldCount = oldElementCounts.get(key) || 0;
-      if (newCount > oldCount) {
-        const addedCount = newCount - oldCount;
-        // 追加された要素のインデックスを特定
-        let addedIndex = 0;
-        for (let i = 0; i < newArray.length && addedIndex < addedCount; i++) {
-          if (getElementKey(newArray[i]) === key) {
-            changes[`[${i}]`] = {
-              type: PropertyChangeType.Added,
-              newValue: newArray[i],
-            };
-            addedIndex++;
-          }
-        }
-      }
-    }
-
-    return createDeltaFromChanges(changes);
+    return calculateArrayDeltaWithoutOrder(oldArray, newArray);
   }
 
   // 順序を考慮した詳細比較
@@ -431,22 +366,102 @@ function createEmptyDelta(): ObjectDelta {
 }
 
 /**
+ * 順序を考慮しない配列の差分を計算
+ */
+function calculateArrayDeltaWithoutOrder(
+  oldArray: unknown[],
+  newArray: unknown[],
+): ObjectDelta {
+  const changes: Record<ChangeKey, PropertyChange> = {};
+
+  // 長さの変更をチェック
+  if (oldArray.length !== newArray.length) {
+    changes[ChangeSpecialKey.Length] = {
+      type: PropertyChangeType.Modified,
+      oldValue: oldArray.length,
+      newValue: newArray.length,
+    };
+  }
+
+  // 各要素の存在と変更をチェック
+  // 重複を考慮した要素のカウント
+  const oldElementCounts = new Map<string, number>();
+  const newElementCounts = new Map<string, number>();
+
+  // 古い配列の要素をカウント
+  oldArray.forEach((oldItem) => {
+    const key = getElementKey(oldItem);
+    oldElementCounts.set(key, (oldElementCounts.get(key) ?? 0) + 1);
+  });
+
+  // 新しい配列の要素をカウント
+  newArray.forEach((newItem) => {
+    const key = getElementKey(newItem);
+    newElementCounts.set(key, (newElementCounts.get(key) ?? 0) + 1);
+  });
+
+  // 削除された要素を検出
+  oldElementCounts.forEach((oldCount, key) => {
+    const newCount = newElementCounts.get(key) ?? 0;
+    if (oldCount > newCount) {
+      const removedCount = oldCount - newCount;
+      // 削除された要素のインデックスを特定
+      let removedIndex = 0;
+      for (
+        let i = 0;
+        i < oldArray.length && removedIndex < removedCount;
+        i++
+      ) {
+        if (getElementKey(oldArray[i]) === key) {
+          changes[`[${i}]`] = {
+            type: PropertyChangeType.Removed,
+            oldValue: oldArray[i],
+          };
+          removedIndex++;
+        }
+      }
+    }
+  });
+
+  // 追加された要素を検出
+  newElementCounts.forEach((newCount, key) => {
+    const oldCount = oldElementCounts.get(key) ?? 0;
+    if (newCount > oldCount) {
+      const addedCount = newCount - oldCount;
+      // 追加された要素のインデックスを特定
+      let addedIndex = 0;
+      for (let i = 0; i < newArray.length && addedIndex < addedCount; i++) {
+        if (getElementKey(newArray[i]) === key) {
+          changes[`[${i}]`] = {
+            type: PropertyChangeType.Added,
+            newValue: newArray[i],
+          };
+          addedIndex++;
+        }
+      }
+    }
+  });
+
+  return createDeltaFromChanges(changes);
+}
+
+/**
  * 配列要素の一意なキーを生成
  */
 function getElementKey(element: unknown): string {
   if (isPrimitive(element)) {
     return `${typeof element}:${String(element)}`;
   }
-  
+
   if (isArray(element)) {
     return `array:${element.length}`;
   }
-  
+
   if (isObject(element)) {
     const keys = Object.keys(element as UnknownValueObject).sort();
     return `object:${keys.join(',')}`;
   }
-  
+
   return `unknown:${String(element)}`;
 }
 
