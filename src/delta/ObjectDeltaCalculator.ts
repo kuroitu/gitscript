@@ -7,7 +7,6 @@
  * プロパティレベルの変更を検出します。
  */
 
-import microdiff from 'microdiff';
 import {
   ChangeKey,
   DeltaCalculationOptions,
@@ -16,6 +15,7 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types/ObjectDelta';
+import microdiff from 'microdiff';
 
 /**
  * 2つのオブジェクト間の差分を計算します
@@ -46,11 +46,15 @@ export function calculateObjectDelta(
     };
 
     // microdiffで差分を計算
-    const microdiffResult = microdiff(oldObject as any, newObject as any, microdiffOptions);
-    
+    const microdiffResult = microdiff(
+      oldObject as any,
+      newObject as any,
+      microdiffOptions,
+    );
+
     // ObjectDelta形式に変換
     const delta = convertMicrodiffToObjectDelta(microdiffResult);
-    
+
     const duration = performance.now() - startTime;
 
     return {
