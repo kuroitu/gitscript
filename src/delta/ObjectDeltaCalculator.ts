@@ -8,6 +8,12 @@
  */
 
 import {
+  calculateObjectDiff,
+  getLastKey,
+  type MicrodiffChange,
+} from '@/delta/MicrodiffWrapper';
+import { DeltaCalculationError } from '@/types/Errors';
+import {
   ChangeKey,
   DeltaCalculationOptions,
   DeltaCalculationResult,
@@ -15,11 +21,6 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types/ObjectDelta';
-import {
-  calculateObjectDiff,
-  getLastKey,
-  type MicrodiffChange,
-} from './MicrodiffWrapper';
 
 /**
  * 2つのオブジェクト間の差分を計算します
@@ -67,14 +68,16 @@ export function calculateObjectDelta(
       totalProperties: countTotalProperties(oldObject, newObject),
     };
   } catch (error) {
-    const duration = performance.now() - startTime;
+    // DeltaCalculationErrorの場合はそのまま再throw
+    if (error instanceof DeltaCalculationError) {
+      throw error;
+    }
 
-    return {
-      delta: createEmptyDelta(),
-      duration,
-      totalProperties: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    // その他のエラーの場合はDeltaCalculationErrorでラップ
+    throw new DeltaCalculationError(
+      'Failed to calculate object delta',
+      error instanceof Error ? error : new Error(String(error)),
+    );
   }
 }
 
@@ -161,7 +164,9 @@ function convertPathToChangeKey(path: (string | number)[]): ChangeKey {
 /**
  * microdiffの変更をPropertyChangeに変換
  */
-function convertMicrodiffChangeToPropertyChange(change: MicrodiffChange): PropertyChange {
+function convertMicrodiffChangeToPropertyChange(
+  change: MicrodiffChange,
+): PropertyChange {
   switch (change.type) {
     case 'CREATE':
       return {
@@ -210,19 +215,6 @@ function createDeltaFromChanges(
     addedCount,
     removedCount,
     modifiedCount,
-  };
-}
-
-/**
- * 空の差分を作成
- */
-function createEmptyDelta(): ObjectDelta {
-  return {
-    changes: {},
-    changeCount: 0,
-    addedCount: 0,
-    removedCount: 0,
-    modifiedCount: 0,
   };
 }
 

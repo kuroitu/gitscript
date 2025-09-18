@@ -34,3 +34,6 @@ export type {
   PropertyChangeType,
   ChangeKey,
 } from '@/types/ObjectDelta';
+
+// エラークラスの再エクスポート
+export { DeltaCalculationError } from '@/types/Errors';

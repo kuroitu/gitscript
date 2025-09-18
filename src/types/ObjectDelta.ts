@@ -44,6 +44,8 @@ export const ChangeSpecialKey = {
   Value: '__value__',
   /** 配列長変更 */
   Length: '__length__',
+  /** ルート */
+  Root: '__root__',
 } as const;
 export type ChangeSpecialKey =
   (typeof ChangeSpecialKey)[keyof typeof ChangeSpecialKey];

@@ -5,20 +5,35 @@
  * 型安全性と一貫性を提供します。
  */
 
+import { isArray, isNativeError, isNull, isObject } from '@/core/utils';
+import { DeltaCalculationError } from '@/types';
 import microdiff from 'microdiff';
 
 /**
  * microdiffの変更タイプ
  */
-export type MicrodiffChangeType = 'CREATE' | 'REMOVE' | 'CHANGE';
+export const MicrodiffChangeType = {
+  /** 作成 */
+  CREATE: 'CREATE',
+  /** 削除 */
+  REMOVE: 'REMOVE',
+  /** 変更 */
+  CHANGE: 'CHANGE',
+} as const;
+export type MicrodiffChangeType =
+  (typeof MicrodiffChangeType)[keyof typeof MicrodiffChangeType];
 
 /**
  * microdiffの変更オブジェクト
  */
 export interface MicrodiffChange {
+  /** 変更タイプ */
   type: MicrodiffChangeType;
+  /** パス */
   path: (string | number)[];
+  /** 値 */
   value?: unknown;
+  /** 古い値 */
   oldValue?: unknown;
 }
 
@@ -26,8 +41,11 @@ export interface MicrodiffChange {
  * microdiffのオプション
  */
 export interface MicrodiffOptions {
+  /** 循環参照の処理 */
   cyclesFix?: boolean;
+  /** 配列の順序を考慮するか */
   ignoreArrays?: boolean;
+  /** 無視するプロパティ */
   ignoreKeys?: string[];
 }
 
@@ -60,9 +78,11 @@ export function calculateDiff(
   try {
     return microdiff(oldObject, newObject, mergedOptions);
   } catch (error) {
-    // エラーが発生した場合は空の配列を返す
-    console.warn('microdiff calculation failed:', error);
-    return [];
+    // エラーが発生した場合は専用エラーをthrow
+    throw new DeltaCalculationError(
+      'Failed to calculate diff using microdiff',
+      isNativeError(error) ? error : undefined,
+    );
   }
 }
 
@@ -106,12 +126,14 @@ export function calculateArrayDiff(
  */
 export function isValidChange(change: unknown): change is MicrodiffChange {
   return (
-    typeof change === 'object' &&
-    change !== null &&
-    'type' in change &&
-    'path' in change &&
-    Array.isArray((change as Record<string, unknown>).path) &&
-    ['CREATE', 'REMOVE', 'CHANGE'].includes((change as MicrodiffChange).type)
+    isObject(change) &&
+    !isNull(change) &&
+    Object.hasOwn(change, 'type') &&
+    Object.hasOwn(change, 'path') &&
+    isArray((change as Record<string, unknown>).path) &&
+    Object.values(MicrodiffChangeType).includes(
+      (change as MicrodiffChange).type,
+    )
   );
 }
 
@@ -132,7 +154,7 @@ export function filterValidChanges(changes: unknown[]): MicrodiffChange[] {
  * @returns 文字列表現
  */
 export function pathToString(path: (string | number)[]): string {
-  return path.map(key => `[${key}]`).join('');
+  return path.map((key) => `[${key}]`).join('');
 }
 
 /**
@@ -142,7 +164,7 @@ export function pathToString(path: (string | number)[]): string {
  * @returns 最後のキー
  */
 export function getLastKey(path: (string | number)[]): string | number {
-  return path[path.length - 1] ?? '';
+  return path.at(-1) ?? '';
 }
 
 /**
@@ -152,5 +174,5 @@ export function getLastKey(path: (string | number)[]): string | number {
  * @returns 最初のキー
  */
 export function getFirstKey(path: (string | number)[]): string | number {
-  return path[0] ?? '';
+  return path.at(0) ?? '';
 }

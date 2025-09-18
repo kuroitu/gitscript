@@ -7,19 +7,23 @@
  * 順序を考慮する/しないオプションをサポートします。
  */
 
+import { isNumber } from '@/core/utils';
+import {
+  calculateArrayDiff,
+  getFirstKey,
+  MicrodiffChangeType,
+  type MicrodiffChange,
+} from '@/delta/MicrodiffWrapper';
+import { DeltaCalculationError } from '@/types/Errors';
 import {
   ChangeKey,
+  ChangeSpecialKey,
   DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
   PropertyChangeType,
 } from '@/types/ObjectDelta';
-import {
-  calculateArrayDiff,
-  getFirstKey,
-  type MicrodiffChange,
-} from './MicrodiffWrapper';
 
 /**
  * 配列の差分を計算します
@@ -56,7 +60,6 @@ export function calculateArrayDelta(
       microdiffResult,
       oldArray,
       newArray,
-      options,
     );
 
     const duration = performance.now() - startTime;
@@ -67,32 +70,36 @@ export function calculateArrayDelta(
       totalProperties: oldArray.length + newArray.length,
     };
   } catch (error) {
-    const duration = performance.now() - startTime;
+    // DeltaCalculationErrorの場合はそのまま再throw
+    if (error instanceof DeltaCalculationError) {
+      throw error;
+    }
 
-    return {
-      delta: createEmptyDelta(),
-      duration,
-      totalProperties: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    // その他のエラーの場合はDeltaCalculationErrorでラップ
+    throw new DeltaCalculationError(
+      'Failed to calculate array delta',
+      error instanceof Error ? error : new Error(String(error)),
+    );
   }
 }
 
 /**
  * 配列の差分をObjectDelta形式に変換
+ * @param microdiffResult microdiffの結果
+ * @param oldArray 変更前の配列
+ * @param newArray 変更後の配列
+ * @returns ObjectDelta
  */
 function convertArrayDiffToObjectDelta(
   microdiffResult: MicrodiffChange[],
   oldArray: unknown[],
   newArray: unknown[],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _options: DeltaCalculationOptions,
 ): ObjectDelta {
   const changes: Record<ChangeKey, PropertyChange> = {};
 
   // 配列の長さの変更をチェック
   if (oldArray.length !== newArray.length) {
-    changes['__length__'] = {
+    changes[ChangeSpecialKey.Length] = {
       type: PropertyChangeType.Modified,
       oldValue: oldArray.length,
       newValue: newArray.length,
@@ -100,11 +107,11 @@ function convertArrayDiffToObjectDelta(
   }
 
   // microdiffの結果を変換
-  for (const change of microdiffResult) {
+  microdiffResult.forEach((change) => {
     const key = convertArrayPathToChangeKey(change.path);
     const propertyChange = convertMicrodiffChangeToPropertyChange(change);
     changes[key] = propertyChange;
-  }
+  });
 
   return createDeltaFromChanges(changes);
 }
@@ -114,17 +121,17 @@ function convertArrayDiffToObjectDelta(
  */
 function convertArrayPathToChangeKey(path: (string | number)[]): ChangeKey {
   if (path.length === 0) {
-    return '__root__';
+    return ChangeSpecialKey.Root;
   }
 
   // 配列のインデックスの場合は[0], [1]形式に変換
-  if (path.length === 1 && typeof path[0] === 'number') {
+  if (path.length === 1 && isNumber(path[0])) {
     return `[${path[0]}]`;
   }
 
   // ネストした配列の場合は最初のインデックスのみを使用
   const firstKey = getFirstKey(path);
-  if (typeof firstKey === 'number') {
+  if (isNumber(firstKey)) {
     return `[${firstKey}]`;
   }
 
@@ -133,20 +140,24 @@ function convertArrayPathToChangeKey(path: (string | number)[]): ChangeKey {
 
 /**
  * microdiffの変更をPropertyChangeに変換
+ * @param change microdiffの変更
+ * @returns PropertyChange
  */
-function convertMicrodiffChangeToPropertyChange(change: MicrodiffChange): PropertyChange {
+function convertMicrodiffChangeToPropertyChange(
+  change: MicrodiffChange,
+): PropertyChange {
   switch (change.type) {
-    case 'CREATE':
+    case MicrodiffChangeType.CREATE:
       return {
         type: PropertyChangeType.Added,
         newValue: change.value,
       };
-    case 'REMOVE':
+    case MicrodiffChangeType.REMOVE:
       return {
         type: PropertyChangeType.Removed,
         oldValue: change.oldValue,
       };
-    case 'CHANGE':
+    case MicrodiffChangeType.CHANGE:
       return {
         type: PropertyChangeType.Modified,
         oldValue: change.oldValue,
@@ -163,6 +174,8 @@ function convertMicrodiffChangeToPropertyChange(change: MicrodiffChange): Proper
 
 /**
  * 変更情報からObjectDeltaを作成
+ * @param changes 変更情報
+ * @returns ObjectDelta
  */
 function createDeltaFromChanges(
   changes: Record<ChangeKey, PropertyChange>,
@@ -183,18 +196,5 @@ function createDeltaFromChanges(
     addedCount,
     removedCount,
     modifiedCount,
-  };
-}
-
-/**
- * 空の差分を作成
- */
-function createEmptyDelta(): ObjectDelta {
-  return {
-    changes: {},
-    changeCount: 0,
-    addedCount: 0,
-    removedCount: 0,
-    modifiedCount: 0,
   };
 }

@@ -6,6 +6,7 @@
  * Set/Mapをオブジェクトに変換してmicrodiffで差分を計算します。
  */
 
+import { DeltaCalculationError } from '@/types/Errors';
 import {
   ChangeKey,
   DeltaCalculationOptions,
@@ -66,14 +67,16 @@ export function calculateSetDelta(
       totalProperties: oldSet.size + newSet.size,
     };
   } catch (error) {
-    const duration = performance.now() - startTime;
+    // DeltaCalculationErrorの場合はそのまま再throw
+    if (error instanceof DeltaCalculationError) {
+      throw error;
+    }
 
-    return {
-      delta: createEmptyDelta(),
-      duration,
-      totalProperties: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    // その他のエラーの場合はDeltaCalculationErrorでラップ
+    throw new DeltaCalculationError(
+      'Failed to calculate Set delta',
+      error instanceof Error ? error : new Error(String(error)),
+    );
   }
 }
 
@@ -125,12 +128,16 @@ export function calculateMapDelta(
   } catch (error) {
     const duration = performance.now() - startTime;
 
-    return {
-      delta: createEmptyDelta(),
-      duration,
-      totalProperties: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    // DeltaCalculationErrorの場合はそのまま再throw
+    if (error instanceof DeltaCalculationError) {
+      throw error;
+    }
+
+    // その他のエラーの場合はDeltaCalculationErrorでラップ
+    throw new DeltaCalculationError(
+      'Failed to calculate Map delta',
+      error instanceof Error ? error : new Error(String(error)),
+    );
   }
 }
 

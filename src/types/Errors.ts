@@ -117,3 +117,16 @@ export class CircularReferenceError extends GitScriptError {
     this.name = 'CircularReferenceError';
   }
 }
+
+/**
+ * 差分計算エラー
+ */
+export class DeltaCalculationError extends GitScriptError {
+  constructor(message: string, originalError?: Error) {
+    const fullMessage = originalError
+      ? `Delta calculation failed: ${message} (${originalError.message})`
+      : `Delta calculation failed: ${message}`;
+    super(fullMessage, 'DELTA_CALCULATION_ERROR', originalError);
+    this.name = 'DeltaCalculationError';
+  }
+}
