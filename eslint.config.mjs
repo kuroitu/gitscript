@@ -7,7 +7,12 @@ export default [
   ...typescriptEslint.configs.recommended,
   ...typescriptEslint.configs.stylistic,
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.ts'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: globals.node,
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -19,15 +24,6 @@ export default [
         },
       ],
     },
-  },
-  {
-    files: ['**/*.{ts}'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: globals.node,
-    },
-    rules: {},
   },
   {
     files: ['tests/**/*.test.ts'],
