@@ -7,12 +7,7 @@ export default [
   ...typescriptEslint.configs.recommended,
   ...typescriptEslint.configs.stylistic,
   {
-    files: ['**/*.{ts}'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: globals.node,
-    },
+    files: ['**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -20,9 +15,19 @@ export default [
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
         },
       ],
     },
+  },
+  {
+    files: ['**/*.{ts}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: globals.node,
+    },
+    rules: {},
   },
   {
     files: ['tests/**/*.test.ts'],
@@ -32,16 +37,4 @@ export default [
     },
   },
   eslintConfigPrettier,
-  {
-    rules: {
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
-    },
-  },
 ];
