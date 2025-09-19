@@ -6,34 +6,43 @@
  * microdiffライブラリを使用した差分計算機能を提供します。
  */
 
-export { calculateObjectDelta } from './ObjectDeltaCalculator';
-export { calculateArrayDelta } from './ArrayDeltaCalculator';
-export { calculateSetDelta, calculateMapDelta } from './SetMapDeltaCalculator';
+export { calculateArrayDelta } from '@/delta/ArrayDeltaCalculator';
+export { calculateObjectDelta } from '@/delta/ObjectDeltaCalculator';
+export {
+  calculateMapDelta,
+  calculateSetDelta,
+} from '@/delta/SetMapDeltaCalculator';
 
 // microdiffラッパーのエクスポート
 export {
   calculateDiff,
-  calculateObjectDiff,
-  calculateArrayDiff,
-  isValidChange,
   filterValidChanges,
-  pathToString,
-  getLastKey,
   getFirstKey,
+  getLastKey,
+  isValidChange,
+  pathToString,
   type MicrodiffChange,
   type MicrodiffOptions,
   type MicrodiffResult,
-} from './MicrodiffWrapper';
+} from '@/delta/MicrodiffWrapper';
+
+// 共通ユーティリティのエクスポート
+export {
+  convertArrayPathToChangeKey,
+  convertMicrodiffChangeToPropertyChange,
+  convertObjectPathToChangeKey,
+  convertSetMapPathToChangeKey,
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from '@/delta/DeltaUtils';
 
 // 型定義の再エクスポート
+export { DeltaCalculationError } from '@/types';
 export type {
+  ChangeKey,
   DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
   PropertyChangeType,
-  ChangeKey,
-} from '@/types/ObjectDelta';
-
-// エラークラスの再エクスポート
-export { DeltaCalculationError } from '@/types/Errors';
+} from '@/types';

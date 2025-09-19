@@ -6,16 +6,13 @@
 
 import {
   calculateDiff,
-  calculateObjectDiff,
-  calculateArrayDiff,
-  isValidChange,
   filterValidChanges,
-  pathToString,
-  getLastKey,
   getFirstKey,
+  getLastKey,
+  isValidChange,
+  pathToString,
   type MicrodiffChange,
 } from '@/delta/MicrodiffWrapper';
-import { DeltaCalculationError } from '@/types/Errors';
 import { describe, expect, it } from 'vitest';
 
 describe('MicrodiffWrapper', () => {
@@ -51,30 +48,6 @@ describe('MicrodiffWrapper', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].type).toBe('CHANGE');
-    });
-  });
-
-  describe('calculateObjectDiff', () => {
-    it('オブジェクトの差分を計算する', () => {
-      const oldObj = { user: { name: 'John' } };
-      const newObj = { user: { name: 'Jane' } };
-      const result = calculateObjectDiff(oldObj, newObj);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('CHANGE');
-      expect(result[0].path).toEqual(['user', 'name']);
-    });
-  });
-
-  describe('calculateArrayDiff', () => {
-    it('配列の差分を計算する', () => {
-      const oldArray = [1, 2, 3];
-      const newArray = [1, 4, 3];
-      const result = calculateArrayDiff(oldArray, newArray);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('CHANGE');
-      expect(result[0].path).toEqual([1]);
     });
   });
 

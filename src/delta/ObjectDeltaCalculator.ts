@@ -8,19 +8,29 @@
  */
 
 import {
-  calculateObjectDiff,
-  getLastKey,
-  type MicrodiffChange,
+  isObject,
+  isPrimitive,
+} from '@/core/utils';
+import {
+  calculateDiff,
+  MicrodiffOptions,
+  MicrodiffResult,
 } from '@/delta/MicrodiffWrapper';
-import { DeltaCalculationError } from '@/types/Errors';
 import {
   ChangeKey,
+  ChangeSpecialKey,
   DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
   PropertyChangeType,
-} from '@/types/ObjectDelta';
+} from '@/types';
+import {
+  convertMicrodiffChangeToPropertyChange,
+  convertObjectPathToChangeKey,
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from './DeltaUtils';
 
 /**
  * 2つのオブジェクト間の差分を計算します
@@ -31,8 +41,8 @@ import {
  * @returns 差分計算の結果
  */
 export function calculateObjectDelta(
-  oldObject: unknown,
-  newObject: unknown,
+  oldObject: Record<string, unknown>,
+  newObject: Record<string, unknown>,
   options: DeltaCalculationOptions = {},
 ): DeltaCalculationResult {
   const startTime = performance.now();
@@ -44,16 +54,16 @@ export function calculateObjectDelta(
     }
 
     // microdiffのオプションを設定
-    const microdiffOptions = {
-      cyclesFix: true, // 循環参照の処理
-      ignoreArrays: !options.arrayOrderMatters, // 配列の順序を考慮するか
-      ignoreKeys: options.ignoreProperties, // 無視するプロパティ
+    const microdiffOptions: MicrodiffOptions = {
+      cyclesFix: true,
+      ignoreArrays: !options.arrayOrderMatters,
+      ignoreKeys: options.ignoreProperties,
     };
 
     // microdiffで差分を計算
-    const microdiffResult = calculateObjectDiff(
-      oldObject as Record<string, unknown>,
-      newObject as Record<string, unknown>,
+    const microdiffResult = calculateDiff(
+      oldObject,
+      newObject,
       microdiffOptions,
     );
 
@@ -68,21 +78,16 @@ export function calculateObjectDelta(
       totalProperties: countTotalProperties(oldObject, newObject),
     };
   } catch (error) {
-    // DeltaCalculationErrorの場合はそのまま再throw
-    if (error instanceof DeltaCalculationError) {
-      throw error;
-    }
-
-    // その他のエラーの場合はDeltaCalculationErrorでラップ
-    throw new DeltaCalculationError(
-      'Failed to calculate object delta',
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    handleDeltaCalculationError(error, 'calculate object delta');
   }
 }
 
 /**
  * プリミティブ値の差分を計算
+ * @param oldValue 変更前の値
+ * @param newValue 変更後の値
+ * @param startTime 開始時間
+ * @returns 差分計算の結果
  */
 function calculatePrimitiveDelta(
   oldValue: unknown,
@@ -94,14 +99,14 @@ function calculatePrimitiveDelta(
   if (oldValue !== newValue) {
     // 型が異なる場合は型変更として扱う
     if (typeof oldValue !== typeof newValue) {
-      changes['__type__'] = {
+      changes[ChangeSpecialKey.Type] = {
         type: PropertyChangeType.Modified,
         oldValue: typeof oldValue,
         newValue: typeof newValue,
       };
     }
 
-    changes['__value__'] = {
+    changes[ChangeSpecialKey.Value] = {
       type: PropertyChangeType.Modified,
       oldValue,
       newValue,
@@ -120,132 +125,39 @@ function calculatePrimitiveDelta(
 
 /**
  * microdiffの結果をObjectDelta形式に変換
+ * @param microdiffResult microdiffの結果
+ * @returns ObjectDelta
  */
 function convertMicrodiffToObjectDelta(
-  microdiffResult: MicrodiffChange[],
+  microdiffResult: MicrodiffResult,
 ): ObjectDelta {
   const changes: Record<ChangeKey, PropertyChange> = {};
 
-  for (const change of microdiffResult) {
-    const key = convertPathToChangeKey(change.path);
+  microdiffResult.forEach((change) => {
+    const key = convertObjectPathToChangeKey(change.path);
     const propertyChange = convertMicrodiffChangeToPropertyChange(change);
     changes[key] = propertyChange;
-  }
+  });
 
   return createDeltaFromChanges(changes);
 }
 
 /**
- * microdiffのパスをChangeKeyに変換
- */
-function convertPathToChangeKey(path: (string | number)[]): ChangeKey {
-  if (path.length === 0) {
-    return '__root__';
-  }
-
-  // 配列のインデックスの場合は[0], [1]形式に変換
-  if (path.length === 1 && typeof path[0] === 'number') {
-    return `[${path[0]}]`;
-  }
-
-  // オブジェクトのプロパティの場合は文字列として返す
-  if (path.length === 1 && typeof path[0] === 'string') {
-    return path[0];
-  }
-
-  // ネストしたパスの場合は最後の要素を使用
-  const lastKey = getLastKey(path);
-  if (typeof lastKey === 'number') {
-    return `[${lastKey}]`;
-  }
-  return lastKey;
-}
-
-/**
- * microdiffの変更をPropertyChangeに変換
- */
-function convertMicrodiffChangeToPropertyChange(
-  change: MicrodiffChange,
-): PropertyChange {
-  switch (change.type) {
-    case 'CREATE':
-      return {
-        type: PropertyChangeType.Added,
-        newValue: change.value,
-      };
-    case 'REMOVE':
-      return {
-        type: PropertyChangeType.Removed,
-        oldValue: change.oldValue,
-      };
-    case 'CHANGE':
-      return {
-        type: PropertyChangeType.Modified,
-        oldValue: change.oldValue,
-        newValue: change.value,
-      };
-    default:
-      return {
-        type: PropertyChangeType.Modified,
-        oldValue: change.oldValue,
-        newValue: change.value,
-      };
-  }
-}
-
-/**
- * 変更情報からObjectDeltaを作成
- */
-function createDeltaFromChanges(
-  changes: Record<ChangeKey, PropertyChange>,
-): ObjectDelta {
-  const addedCount = Object.values(changes).filter(
-    (c) => c.type === PropertyChangeType.Added,
-  ).length;
-  const removedCount = Object.values(changes).filter(
-    (c) => c.type === PropertyChangeType.Removed,
-  ).length;
-  const modifiedCount = Object.values(changes).filter(
-    (c) => c.type === PropertyChangeType.Modified,
-  ).length;
-
-  return {
-    changes,
-    changeCount: addedCount + removedCount + modifiedCount,
-    addedCount,
-    removedCount,
-    modifiedCount,
-  };
-}
-
-/**
  * 総プロパティ数をカウント
+ * @param oldObject 変更前のオブジェクト
+ * @param newObject 変更後のオブジェクス
+ * @returns 総プロパティ数
  */
 function countTotalProperties(oldObject: unknown, newObject: unknown): number {
   let count = 0;
 
-  if (typeof oldObject === 'object' && oldObject !== null) {
+  if (isObject(oldObject)) {
     count += Object.keys(oldObject).length;
   }
 
-  if (typeof newObject === 'object' && newObject !== null) {
+  if (isObject(newObject)) {
     count += Object.keys(newObject).length;
   }
 
   return count;
-}
-
-/**
- * プリミティブ値かどうかを判定
- */
-function isPrimitive(value: unknown): boolean {
-  return (
-    value === null ||
-    value === undefined ||
-    typeof value === 'boolean' ||
-    typeof value === 'number' ||
-    typeof value === 'string' ||
-    typeof value === 'symbol' ||
-    typeof value === 'bigint'
-  );
 }

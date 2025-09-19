@@ -5,7 +5,7 @@
  * 型安全性と一貫性を提供します。
  */
 
-import { isArray, isNativeError, isNull, isObject } from '@/core/utils';
+import { isArray, isNativeError, isNumber, isString } from '@/core/utils';
 import { DeltaCalculationError } from '@/types';
 import microdiff from 'microdiff';
 
@@ -14,11 +14,11 @@ import microdiff from 'microdiff';
  */
 export const MicrodiffChangeType = {
   /** 作成 */
-  CREATE: 'CREATE',
+  Create: 'CREATE',
   /** 削除 */
-  REMOVE: 'REMOVE',
+  Remove: 'REMOVE',
   /** 変更 */
-  CHANGE: 'CHANGE',
+  Change: 'CHANGE',
 } as const;
 export type MicrodiffChangeType =
   (typeof MicrodiffChangeType)[keyof typeof MicrodiffChangeType];
@@ -30,12 +30,22 @@ export interface MicrodiffChange {
   /** 変更タイプ */
   type: MicrodiffChangeType;
   /** パス */
-  path: (string | number)[];
+  path: MicrodiffPath;
   /** 値 */
   value?: unknown;
   /** 古い値 */
   oldValue?: unknown;
 }
+
+/**
+ * microdiffの結果
+ */
+export type MicrodiffResult = MicrodiffChange[];
+
+/**
+ * microdiffのパス
+ */
+export type MicrodiffPath = (string | number)[];
 
 /**
  * microdiffのオプション
@@ -48,11 +58,6 @@ export interface MicrodiffOptions {
   /** 無視するプロパティ */
   ignoreKeys?: string[];
 }
-
-/**
- * microdiffの結果
- */
-export type MicrodiffResult = MicrodiffChange[];
 
 /**
  * オブジェクトの差分を計算
@@ -87,35 +92,27 @@ export function calculateDiff(
 }
 
 /**
- * オブジェクトの差分を計算（型安全版）
+ * 変更タイプが有効かどうかを判定
  *
- * @param oldObject 変更前のオブジェクト
- * @param newObject 変更後のオブジェクト
- * @param options オプション
- * @returns 差分の結果
+ * @param type 変更タイプ
+ * @returns 有効な場合true
  */
-export function calculateObjectDiff(
-  oldObject: Record<string, unknown>,
-  newObject: Record<string, unknown>,
-  options: MicrodiffOptions = {},
-): MicrodiffResult {
-  return calculateDiff(oldObject, newObject, options);
+export function isMicrodiffChangeType(
+  type: unknown,
+): type is MicrodiffChangeType {
+  return Object.values(MicrodiffChangeType).includes(
+    type as MicrodiffChangeType,
+  );
 }
 
 /**
- * 配列の差分を計算（型安全版）
+ * パスが有効かどうかを判定
  *
- * @param oldArray 変更前の配列
- * @param newArray 変更後の配列
- * @param options オプション
- * @returns 差分の結果
+ * @param path パス
+ * @returns 有効な場合true
  */
-export function calculateArrayDiff(
-  oldArray: unknown[],
-  newArray: unknown[],
-  options: MicrodiffOptions = {},
-): MicrodiffResult {
-  return calculateDiff(oldArray, newArray, options);
+export function isMicrodiffPath(path: unknown): path is MicrodiffPath {
+  return isArray(path) && path.every((key) => isString(key) || isNumber(key));
 }
 
 /**
@@ -125,15 +122,14 @@ export function calculateArrayDiff(
  * @returns 有効な場合true
  */
 export function isValidChange(change: unknown): change is MicrodiffChange {
+  if (!change || typeof change !== 'object') {
+    return false;
+  }
+  
+  const microdiffChange = change as MicrodiffChange;
   return (
-    isObject(change) &&
-    !isNull(change) &&
-    Object.hasOwn(change, 'type') &&
-    Object.hasOwn(change, 'path') &&
-    isArray((change as Record<string, unknown>).path) &&
-    Object.values(MicrodiffChangeType).includes(
-      (change as MicrodiffChange).type,
-    )
+    isMicrodiffChangeType(microdiffChange.type) &&
+    isMicrodiffPath(microdiffChange.path)
   );
 }
 
@@ -143,7 +139,7 @@ export function isValidChange(change: unknown): change is MicrodiffChange {
  * @param changes 変更オブジェクトの配列
  * @returns 有効な変更オブジェクトの配列
  */
-export function filterValidChanges(changes: unknown[]): MicrodiffChange[] {
+export function filterValidChanges(changes: unknown[]): MicrodiffResult {
   return changes.filter(isValidChange);
 }
 
@@ -153,7 +149,7 @@ export function filterValidChanges(changes: unknown[]): MicrodiffChange[] {
  * @param path パス配列
  * @returns 文字列表現
  */
-export function pathToString(path: (string | number)[]): string {
+export function pathToString(path: MicrodiffPath): string {
   return path.map((key) => `[${key}]`).join('');
 }
 
@@ -163,7 +159,7 @@ export function pathToString(path: (string | number)[]): string {
  * @param path パス配列
  * @returns 最後のキー
  */
-export function getLastKey(path: (string | number)[]): string | number {
+export function getLastKey(path: MicrodiffPath): string | number {
   return path.at(-1) ?? '';
 }
 
@@ -173,6 +169,6 @@ export function getLastKey(path: (string | number)[]): string | number {
  * @param path パス配列
  * @returns 最初のキー
  */
-export function getFirstKey(path: (string | number)[]): string | number {
+export function getFirstKey(path: MicrodiffPath): string | number {
   return path.at(0) ?? '';
 }

@@ -46,6 +46,8 @@ export const ChangeSpecialKey = {
   Length: '__length__',
   /** ルート */
   Root: '__root__',
+  /** サイズ変更 */
+  Size: '__size__',
 } as const;
 export type ChangeSpecialKey =
   (typeof ChangeSpecialKey)[keyof typeof ChangeSpecialKey];
@@ -56,9 +58,12 @@ export type ChangeSpecialKey =
  * 実際に使用されるキーの型を定義
  */
 export type ChangeKey =
-  | string // 通常のプロパティ名
-  | `[${number}]` // 配列インデックス
-  | ChangeSpecialKey;
+  // 特殊な変更キー
+  | ChangeSpecialKey
+  // 配列インデックス
+  | `[${number}]`
+  // 通常のプロパティ名
+  | string;
 
 /**
  * オブジェクト差分

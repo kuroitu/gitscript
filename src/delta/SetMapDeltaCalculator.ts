@@ -6,20 +6,27 @@
  * Set/Mapをオブジェクトに変換してmicrodiffで差分を計算します。
  */
 
-import { DeltaCalculationError } from '@/types/Errors';
+import { isString } from '@/core/utils';
+import {
+  calculateDiff,
+  MicrodiffResult,
+  type MicrodiffChange,
+} from '@/delta/MicrodiffWrapper';
 import {
   ChangeKey,
+  ChangeSpecialKey,
   DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
   PropertyChangeType,
-} from '@/types/ObjectDelta';
+} from '@/types';
 import {
-  calculateObjectDiff,
-  getFirstKey,
-  type MicrodiffChange,
-} from './MicrodiffWrapper';
+  convertMicrodiffChangeToPropertyChange,
+  convertSetMapPathToChangeKey,
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from './DeltaUtils';
 
 /**
  * Setの差分を計算します
@@ -42,15 +49,11 @@ export function calculateSetDelta(
     const newObj = setToObject(newSet);
 
     // microdiffで差分を計算
-    const microdiffResult = calculateObjectDiff(
-      oldObj,
-      newObj,
-      {
-        cyclesFix: true,
-        ignoreArrays: true,
-        ignoreKeys: options.ignoreProperties,
-      },
-    );
+    const microdiffResult: MicrodiffResult = calculateDiff(oldObj, newObj, {
+      cyclesFix: true,
+      ignoreArrays: true,
+      ignoreKeys: options.ignoreProperties,
+    });
 
     // ObjectDelta形式に変換
     const delta = convertSetMapDiffToObjectDelta(
@@ -67,16 +70,7 @@ export function calculateSetDelta(
       totalProperties: oldSet.size + newSet.size,
     };
   } catch (error) {
-    // DeltaCalculationErrorの場合はそのまま再throw
-    if (error instanceof DeltaCalculationError) {
-      throw error;
-    }
-
-    // その他のエラーの場合はDeltaCalculationErrorでラップ
-    throw new DeltaCalculationError(
-      'Failed to calculate Set delta',
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    handleDeltaCalculationError(error, 'calculate Map delta');
   }
 }
 
@@ -101,15 +95,11 @@ export function calculateMapDelta(
     const newObj = mapToObject(newMap);
 
     // microdiffで差分を計算
-    const microdiffResult = calculateObjectDiff(
-      oldObj,
-      newObj,
-      {
-        cyclesFix: true,
-        ignoreArrays: true,
-        ignoreKeys: options.ignoreProperties,
-      },
-    );
+    const microdiffResult: MicrodiffResult = calculateDiff(oldObj, newObj, {
+      cyclesFix: true,
+      ignoreArrays: true,
+      ignoreKeys: options.ignoreProperties,
+    });
 
     // ObjectDelta形式に変換
     const delta = convertSetMapDiffToObjectDelta(
@@ -126,23 +116,14 @@ export function calculateMapDelta(
       totalProperties: oldMap.size + newMap.size,
     };
   } catch (error) {
-    const duration = performance.now() - startTime;
-
-    // DeltaCalculationErrorの場合はそのまま再throw
-    if (error instanceof DeltaCalculationError) {
-      throw error;
-    }
-
-    // その他のエラーの場合はDeltaCalculationErrorでラップ
-    throw new DeltaCalculationError(
-      'Failed to calculate Map delta',
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    handleDeltaCalculationError(error, 'calculate Map delta');
   }
 }
 
 /**
  * Setをオブジェクトに変換
+ * @param set Set
+ * @returns オブジェクト
  */
 function setToObject(set: Set<unknown>): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
@@ -156,11 +137,13 @@ function setToObject(set: Set<unknown>): Record<string, unknown> {
 
 /**
  * Mapをオブジェクトに変換
+ * @param map Map
+ * @returns オブジェクト
  */
 function mapToObject(map: Map<unknown, unknown>): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
   for (const [key, value] of map) {
-    const keyStr = typeof key === 'string' ? key : `key_${String(key)}`;
+    const keyStr = isString(key) ? key : `key_${String(key)}`;
     obj[keyStr] = value;
   }
   return obj;
@@ -168,6 +151,10 @@ function mapToObject(map: Map<unknown, unknown>): Record<string, unknown> {
 
 /**
  * Set/Mapの差分をObjectDelta形式に変換
+ * @param microdiffResult microdiffの結果
+ * @param oldCollection 変更前のSet/Map
+ * @param newCollection 変更後のSet/Map
+ * @returns ObjectDelta
  */
 function convertSetMapDiffToObjectDelta(
   microdiffResult: MicrodiffChange[],
@@ -178,7 +165,7 @@ function convertSetMapDiffToObjectDelta(
 
   // サイズの変更をチェック
   if (oldCollection.size !== newCollection.size) {
-    changes['__size__'] = {
+    changes[ChangeSpecialKey.Size] = {
       type: PropertyChangeType.Modified,
       oldValue: oldCollection.size,
       newValue: newCollection.size,
@@ -186,92 +173,11 @@ function convertSetMapDiffToObjectDelta(
   }
 
   // microdiffの結果を変換
-  for (const change of microdiffResult) {
+  microdiffResult.forEach((change) => {
     const key = convertSetMapPathToChangeKey(change.path);
     const propertyChange = convertMicrodiffChangeToPropertyChange(change);
     changes[key] = propertyChange;
-  }
+  });
 
   return createDeltaFromChanges(changes);
-}
-
-/**
- * Set/MapのパスをChangeKeyに変換
- */
-function convertSetMapPathToChangeKey(path: (string | number)[]): ChangeKey {
-  if (path.length === 0) {
-    return '__root__';
-  }
-
-  // 最初の要素をキーとして使用
-  const firstKey = getFirstKey(path);
-  return String(firstKey);
-}
-
-/**
- * microdiffの変更をPropertyChangeに変換
- */
-function convertMicrodiffChangeToPropertyChange(change: MicrodiffChange): PropertyChange {
-  switch (change.type) {
-    case 'CREATE':
-      return {
-        type: PropertyChangeType.Added,
-        newValue: change.value,
-      };
-    case 'REMOVE':
-      return {
-        type: PropertyChangeType.Removed,
-        oldValue: change.oldValue,
-      };
-    case 'CHANGE':
-      return {
-        type: PropertyChangeType.Modified,
-        oldValue: change.oldValue,
-        newValue: change.value,
-      };
-    default:
-      return {
-        type: PropertyChangeType.Modified,
-        oldValue: change.oldValue,
-        newValue: change.value,
-      };
-  }
-}
-
-/**
- * 変更情報からObjectDeltaを作成
- */
-function createDeltaFromChanges(
-  changes: Record<ChangeKey, PropertyChange>,
-): ObjectDelta {
-  const addedCount = Object.values(changes).filter(
-    (c) => c.type === PropertyChangeType.Added,
-  ).length;
-  const removedCount = Object.values(changes).filter(
-    (c) => c.type === PropertyChangeType.Removed,
-  ).length;
-  const modifiedCount = Object.values(changes).filter(
-    (c) => c.type === PropertyChangeType.Modified,
-  ).length;
-
-  return {
-    changes,
-    changeCount: addedCount + removedCount + modifiedCount,
-    addedCount,
-    removedCount,
-    modifiedCount,
-  };
-}
-
-/**
- * 空の差分を作成
- */
-function createEmptyDelta(): ObjectDelta {
-  return {
-    changes: {},
-    changeCount: 0,
-    addedCount: 0,
-    removedCount: 0,
-    modifiedCount: 0,
-  };
 }
