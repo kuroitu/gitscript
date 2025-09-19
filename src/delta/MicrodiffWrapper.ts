@@ -125,7 +125,7 @@ export function isValidChange(change: unknown): change is MicrodiffChange {
   if (!change || typeof change !== 'object') {
     return false;
   }
-  
+
   const microdiffChange = change as MicrodiffChange;
   return (
     isMicrodiffChangeType(microdiffChange.type) &&

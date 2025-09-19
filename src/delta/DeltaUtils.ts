@@ -11,7 +11,7 @@ import {
   MicrodiffChangeType,
   type MicrodiffChange,
   type MicrodiffPath,
-} from './MicrodiffWrapper';
+} from '@/delta/MicrodiffWrapper';
 import {
   ChangeKey,
   ChangeSpecialKey,

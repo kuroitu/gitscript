@@ -7,10 +7,13 @@
  * プロパティレベルの変更を検出します。
  */
 
+import { isObject, isPrimitive } from '@/core/utils';
 import {
-  isObject,
-  isPrimitive,
-} from '@/core/utils';
+  convertMicrodiffChangeToPropertyChange,
+  convertObjectPathToChangeKey,
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from '@/delta/DeltaUtils';
 import {
   calculateDiff,
   MicrodiffOptions,
@@ -25,12 +28,6 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types';
-import {
-  convertMicrodiffChangeToPropertyChange,
-  convertObjectPathToChangeKey,
-  createDeltaFromChanges,
-  handleDeltaCalculationError,
-} from './DeltaUtils';
 
 /**
  * 2つのオブジェクト間の差分を計算します

@@ -8,6 +8,12 @@
  */
 
 import {
+  convertArrayPathToChangeKey,
+  convertMicrodiffChangeToPropertyChange,
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from '@/delta/DeltaUtils';
+import {
   calculateDiff,
   MicrodiffOptions,
   MicrodiffResult,
@@ -21,12 +27,6 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types';
-import {
-  convertArrayPathToChangeKey,
-  convertMicrodiffChangeToPropertyChange,
-  createDeltaFromChanges,
-  handleDeltaCalculationError,
-} from './DeltaUtils';
 
 /**
  * 配列の差分を計算します

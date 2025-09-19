@@ -1,17 +1,27 @@
 /**
  * 差分計算モジュール
  *
- * Phase 2.1-2.2: オブジェクト・配列・Set・Map の差分計算
+ * Phase 2.1-2.2: オブジェクト・配列・Set・Map・プリミティブ の差分計算
  *
  * microdiffライブラリを使用した差分計算機能を提供します。
  */
 
-export { calculateArrayDelta } from '@/delta/ArrayDeltaCalculator';
-export { calculateObjectDelta } from '@/delta/ObjectDeltaCalculator';
+// ルート関数（推奨）
 export {
-  calculateMapDelta,
-  calculateSetDelta,
-} from '@/delta/SetMapDeltaCalculator';
+  calculateDelta,
+  calculateArrayDeltaSafe,
+  calculateMapDeltaSafe,
+  calculateObjectDeltaSafe,
+  calculatePrimitiveDeltaSafe,
+  calculateSetDeltaSafe,
+} from '@/delta/DeltaCalculator';
+
+// 個別の差分計算器
+export { calculateArrayDelta } from '@/delta/ArrayDeltaCalculator';
+export { calculateMapDelta } from '@/delta/MapDeltaCalculator';
+export { calculateObjectDelta } from '@/delta/ObjectDeltaCalculator';
+export { calculatePrimitiveDelta } from '@/delta/PrimitiveDeltaCalculator';
+export { calculateSetDelta } from '@/delta/SetDeltaCalculator';
 
 // microdiffラッパーのエクスポート
 export {
