@@ -7,14 +7,7 @@
  */
 
 // ルート関数（推奨）
-export {
-  calculateDelta,
-  calculateArrayDeltaSafe,
-  calculateMapDeltaSafe,
-  calculateObjectDeltaSafe,
-  calculatePrimitiveDeltaSafe,
-  calculateSetDeltaSafe,
-} from '@/delta/DeltaCalculator';
+export { calculateDelta } from '@/delta/DeltaCalculator';
 
 // 個別の差分計算器
 export { calculateArrayDelta } from '@/delta/ArrayDeltaCalculator';

@@ -4,16 +4,13 @@
  * 値の型に応じて適切な差分計算器を呼び分けます。
  */
 
-import { isArray, isObject, isPrimitive } from '@/core/utils';
-import { calculateArrayDelta } from './ArrayDeltaCalculator';
-import { calculateMapDelta } from './MapDeltaCalculator';
-import { calculateObjectDelta } from './ObjectDeltaCalculator';
-import { calculatePrimitiveDelta } from './PrimitiveDeltaCalculator';
-import { calculateSetDelta } from './SetDeltaCalculator';
-import {
-  DeltaCalculationOptions,
-  DeltaCalculationResult,
-} from '@/types';
+import { isArray, isMap, isObject, isPrimitive, isSet } from '@/core/utils';
+import { calculateArrayDelta } from '@/delta/ArrayDeltaCalculator';
+import { calculateMapDelta } from '@/delta/MapDeltaCalculator';
+import { calculateObjectDelta } from '@/delta/ObjectDeltaCalculator';
+import { calculatePrimitiveDelta } from '@/delta/PrimitiveDeltaCalculator';
+import { calculateSetDelta } from '@/delta/SetDeltaCalculator';
+import { DeltaCalculationOptions, DeltaCalculationResult } from '@/types';
 
 /**
  * 値の型に応じて適切な差分計算を実行します
@@ -39,12 +36,12 @@ export function calculateDelta(
   }
 
   // Setの場合
-  if (oldValue instanceof Set && newValue instanceof Set) {
+  if (isSet(oldValue) && isSet(newValue)) {
     return calculateSetDelta(oldValue, newValue, options);
   }
 
   // Mapの場合
-  if (oldValue instanceof Map && newValue instanceof Map) {
+  if (isMap(oldValue) && isMap(newValue)) {
     return calculateMapDelta(oldValue, newValue, options);
   }
 
@@ -58,85 +55,5 @@ export function calculateDelta(
   }
 
   // 型が異なる場合はプリミティブとして扱う
-  return calculatePrimitiveDelta(oldValue, newValue, options);
-}
-
-/**
- * オブジェクトの差分を計算します（型安全版）
- *
- * @param oldObject 変更前のオブジェクト
- * @param newObject 変更後のオブジェクト
- * @param options 計算オプション
- * @returns 差分計算の結果
- */
-export function calculateObjectDeltaSafe(
-  oldObject: Record<string, unknown>,
-  newObject: Record<string, unknown>,
-  options: DeltaCalculationOptions = {},
-): DeltaCalculationResult {
-  return calculateObjectDelta(oldObject, newObject, options);
-}
-
-/**
- * 配列の差分を計算します（型安全版）
- *
- * @param oldArray 変更前の配列
- * @param newArray 変更後の配列
- * @param options 計算オプション
- * @returns 差分計算の結果
- */
-export function calculateArrayDeltaSafe(
-  oldArray: unknown[],
-  newArray: unknown[],
-  options: DeltaCalculationOptions = {},
-): DeltaCalculationResult {
-  return calculateArrayDelta(oldArray, newArray, options);
-}
-
-/**
- * Setの差分を計算します（型安全版）
- *
- * @param oldSet 変更前のSet
- * @param newSet 変更後のSet
- * @param options 計算オプション
- * @returns 差分計算の結果
- */
-export function calculateSetDeltaSafe(
-  oldSet: Set<unknown>,
-  newSet: Set<unknown>,
-  options: DeltaCalculationOptions = {},
-): DeltaCalculationResult {
-  return calculateSetDelta(oldSet, newSet, options);
-}
-
-/**
- * Mapの差分を計算します（型安全版）
- *
- * @param oldMap 変更前のMap
- * @param newMap 変更後のMap
- * @param options 計算オプション
- * @returns 差分計算の結果
- */
-export function calculateMapDeltaSafe(
-  oldMap: Map<unknown, unknown>,
-  newMap: Map<unknown, unknown>,
-  options: DeltaCalculationOptions = {},
-): DeltaCalculationResult {
-  return calculateMapDelta(oldMap, newMap, options);
-}
-
-/**
- * プリミティブ値の差分を計算します（型安全版）
- *
- * @param oldValue 変更前の値
- * @param newValue 変更後の値
- * @param options 計算オプション
- * @returns 差分計算の結果
- */
-export function calculatePrimitiveDeltaSafe(
-  oldValue: unknown,
-  newValue: unknown,
-  options: DeltaCalculationOptions = {},
-): DeltaCalculationResult {
   return calculatePrimitiveDelta(oldValue, newValue, options);
 }

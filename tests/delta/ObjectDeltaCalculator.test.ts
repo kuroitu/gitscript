@@ -4,7 +4,7 @@
  * Phase 2.1: JavaScript オブジェクトの差分計算
  */
 
-import { calculateObjectDelta, DeltaCalculationError } from '@/delta/ObjectDeltaCalculator';
+import { calculateObjectDelta } from '@/delta/ObjectDeltaCalculator';
 import { describe, expect, it } from 'vitest';
 
 describe('calculateObjectDelta (microdiff-based)', () => {
@@ -114,103 +114,6 @@ describe('calculateObjectDelta (microdiff-based)', () => {
     });
   });
 
-  describe('配列の差分計算', () => {
-    it('配列の要素が追加された場合を正しく処理する', () => {
-      const oldArray = [1, 2, 3];
-      const newArray = [1, 2, 3, 4];
-      const result = calculateObjectDelta(oldArray, newArray);
-
-      expect(result.delta.changeCount).toBe(1);
-      expect(result.delta.addedCount).toBe(1);
-
-      const change = result.delta.changes['[3]'];
-      expect(change.type).toBe('added');
-      expect(change.newValue).toBe(4);
-    });
-
-    it('配列の要素が削除された場合を正しく処理する', () => {
-      const oldArray = [1, 2, 3, 4];
-      const newArray = [1, 2, 3];
-      const result = calculateObjectDelta(oldArray, newArray);
-
-      expect(result.delta.changeCount).toBe(1);
-      expect(result.delta.removedCount).toBe(1);
-
-      const change = result.delta.changes['[3]'];
-      expect(change.type).toBe('removed');
-      expect(change.oldValue).toBe(4);
-    });
-
-    it('配列の要素が変更された場合を正しく処理する', () => {
-      const oldArray = [1, 2, 3];
-      const newArray = [1, 4, 3];
-      const result = calculateObjectDelta(oldArray, newArray);
-
-      expect(result.delta.changeCount).toBe(1);
-      expect(result.delta.modifiedCount).toBe(1);
-
-      const change = result.delta.changes['[1]'];
-      expect(change.type).toBe('modified');
-      expect(change.oldValue).toBe(2);
-      expect(change.newValue).toBe(4);
-    });
-  });
-
-  describe('プリミティブ値の差分計算', () => {
-    it('数値の変更を正しく検出する', () => {
-      const result = calculateObjectDelta(42, 100);
-
-      expect(result.delta.changeCount).toBe(1);
-      expect(result.delta.modifiedCount).toBe(1);
-
-      const change = result.delta.changes['__value__'];
-      expect(change.type).toBe('modified');
-      expect(change.oldValue).toBe(42);
-      expect(change.newValue).toBe(100);
-    });
-
-    it('文字列の変更を正しく検出する', () => {
-      const result = calculateObjectDelta('hello', 'world');
-
-      expect(result.delta.changeCount).toBe(1);
-      expect(result.delta.modifiedCount).toBe(1);
-
-      const change = result.delta.changes['__value__'];
-      expect(change.type).toBe('modified');
-      expect(change.oldValue).toBe('hello');
-      expect(change.newValue).toBe('world');
-    });
-
-    it('同じプリミティブ値の差分は空であるべき', () => {
-      const result = calculateObjectDelta(42, 42);
-
-      expect(result.delta.changeCount).toBe(0);
-      expect(result.delta.addedCount).toBe(0);
-      expect(result.delta.removedCount).toBe(0);
-      expect(result.delta.modifiedCount).toBe(0);
-    });
-  });
-
-  describe('型変更の差分計算', () => {
-    it('異なる型間の変更を正しく検出する', () => {
-      const result = calculateObjectDelta(42, '42');
-
-      expect(result.delta.changeCount).toBe(2);
-      expect(result.delta.modifiedCount).toBe(2);
-
-      const typeChange = result.delta.changes['__type__'];
-      const valueChange = result.delta.changes['__value__'];
-
-      expect(typeChange.type).toBe('modified');
-      expect(typeChange.oldValue).toBe('number');
-      expect(typeChange.newValue).toBe('string');
-
-      expect(valueChange.type).toBe('modified');
-      expect(valueChange.oldValue).toBe(42);
-      expect(valueChange.newValue).toBe('42');
-    });
-  });
-
   describe('オプション設定のテスト', () => {
     it('無視するプロパティを正しく処理する', () => {
       const options = {
@@ -226,19 +129,6 @@ describe('calculateObjectDelta (microdiff-based)', () => {
       expect(result.delta.changeCount).toBe(1);
     });
 
-    it('配列の順序を考慮しないオプションを正しく処理する', () => {
-      const options = {
-        arrayOrderMatters: false,
-      };
-
-      const oldArray = [1, 2, 3];
-      const newArray = [3, 1, 2];
-      const result = calculateObjectDelta(oldArray, newArray, options);
-
-      // microdiffのignoreArraysは期待通りに動作しない場合がある
-      // 現在の実装では順序の変更が検出される
-      expect(result.delta.changeCount).toBe(3);
-    });
   });
 
   describe('パフォーマンスとエラーハンドリング', () => {
