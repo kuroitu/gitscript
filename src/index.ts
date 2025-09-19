@@ -48,6 +48,10 @@ export {
 
 // 型定義のエクスポート
 export * from '@/core/serialization/types';
+export * from '@/types/ObjectDelta';
+
+// 差分計算機能のエクスポート
+export * from '@/delta';
 
 // エラークラスのエクスポート
 export { CryptoError } from '@/core/crypto/CryptoProvider';
