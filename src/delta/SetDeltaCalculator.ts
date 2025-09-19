@@ -4,11 +4,13 @@
  * Setをオブジェクトに変換してmicrodiffで差分を計算します。
  */
 
-import { isString } from '@/core/utils';
 import {
-  calculateDiff,
-  MicrodiffResult,
-} from '@/delta/MicrodiffWrapper';
+  convertMicrodiffChangeToPropertyChange,
+  convertSetMapPathToChangeKey,
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from '@/delta/DeltaUtils';
+import { calculateDiff, MicrodiffResult } from '@/delta/MicrodiffWrapper';
 import {
   ChangeKey,
   ChangeSpecialKey,
@@ -18,12 +20,6 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types';
-import {
-  convertMicrodiffChangeToPropertyChange,
-  convertSetMapPathToChangeKey,
-  createDeltaFromChanges,
-  handleDeltaCalculationError,
-} from '@/delta/DeltaUtils';
 
 /**
  * Setの差分を計算します
@@ -53,11 +49,7 @@ export function calculateSetDelta(
     });
 
     // ObjectDelta形式に変換
-    const delta = convertSetDiffToObjectDelta(
-      microdiffResult,
-      oldSet,
-      newSet,
-    );
+    const delta = convertSetDiffToObjectDelta(microdiffResult, oldSet, newSet);
 
     const duration = performance.now() - startTime;
 

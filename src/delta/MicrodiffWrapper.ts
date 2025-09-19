@@ -122,12 +122,9 @@ export function isMicrodiffPath(path: unknown): path is MicrodiffPath {
  * @returns 有効な場合true
  */
 export function isValidChange(change: unknown): change is MicrodiffChange {
-  if (!change || typeof change !== 'object') {
-    return false;
-  }
-
   const microdiffChange = change as MicrodiffChange;
   return (
+    !!microdiffChange &&
     isMicrodiffChangeType(microdiffChange.type) &&
     isMicrodiffPath(microdiffChange.path)
   );

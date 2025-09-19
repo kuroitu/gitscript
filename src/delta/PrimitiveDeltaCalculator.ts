@@ -7,6 +7,10 @@
 
 import { isPrimitive } from '@/core/utils';
 import {
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from '@/delta/DeltaUtils';
+import {
   ChangeKey,
   ChangeSpecialKey,
   DeltaCalculationOptions,
@@ -15,23 +19,19 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types';
-import {
-  createDeltaFromChanges,
-  handleDeltaCalculationError,
-} from '@/delta/DeltaUtils';
 
 /**
  * プリミティブ値の差分を計算します
  *
  * @param oldValue 変更前の値
  * @param newValue 変更後の値
- * @param options 計算オプション
+ * @param _options 計算オプション
  * @returns 差分計算の結果
  */
 export function calculatePrimitiveDelta(
   oldValue: unknown,
   newValue: unknown,
-  options: DeltaCalculationOptions = {},
+  _options: DeltaCalculationOptions = {},
 ): DeltaCalculationResult {
   const startTime = performance.now();
 

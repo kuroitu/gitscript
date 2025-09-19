@@ -6,9 +6,12 @@
 
 import { isString } from '@/core/utils';
 import {
-  calculateDiff,
-  MicrodiffResult,
-} from '@/delta/MicrodiffWrapper';
+  convertMicrodiffChangeToPropertyChange,
+  convertSetMapPathToChangeKey,
+  createDeltaFromChanges,
+  handleDeltaCalculationError,
+} from '@/delta/DeltaUtils';
+import { calculateDiff, MicrodiffResult } from '@/delta/MicrodiffWrapper';
 import {
   ChangeKey,
   ChangeSpecialKey,
@@ -18,12 +21,6 @@ import {
   PropertyChange,
   PropertyChangeType,
 } from '@/types';
-import {
-  convertMicrodiffChangeToPropertyChange,
-  convertSetMapPathToChangeKey,
-  createDeltaFromChanges,
-  handleDeltaCalculationError,
-} from '@/delta/DeltaUtils';
 
 /**
  * Mapの差分を計算します
@@ -53,11 +50,7 @@ export function calculateMapDelta(
     });
 
     // ObjectDelta形式に変換
-    const delta = convertMapDiffToObjectDelta(
-      microdiffResult,
-      oldMap,
-      newMap,
-    );
+    const delta = convertMapDiffToObjectDelta(microdiffResult, oldMap, newMap);
 
     const duration = performance.now() - startTime;
 

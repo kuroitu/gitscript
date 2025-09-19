@@ -83,8 +83,14 @@ describe('ArrayDeltaCalculator', () => {
 
     it('ネストした配列の差分を計算する', () => {
       const result = calculateArrayDelta(
-        [[1, 2], [3, 4]],
-        [[1, 2], [3, 5]]
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        [
+          [1, 2],
+          [3, 5],
+        ],
       );
       expect(result.delta.changeCount).toBe(1);
       expect(result.delta.changes['[1]']).toBeDefined();
@@ -93,29 +99,25 @@ describe('ArrayDeltaCalculator', () => {
     it('オブジェクトを含む配列の差分を計算する', () => {
       const result = calculateArrayDelta(
         [{ name: 'John' }, { name: 'Jane' }],
-        [{ name: 'John' }, { name: 'Bob' }]
+        [{ name: 'John' }, { name: 'Bob' }],
       );
       expect(result.delta.changeCount).toBe(1);
       expect(result.delta.changes['[1]']).toBeDefined();
     });
 
     it('配列の順序を考慮しないオプションを適用する', () => {
-      const result = calculateArrayDelta(
-        [1, 2, 3],
-        [3, 1, 2],
-        { arrayOrderMatters: false }
-      );
+      const result = calculateArrayDelta([1, 2, 3], [3, 1, 2], {
+        arrayOrderMatters: false,
+      });
       // microdiffのignoreArraysオプションは期待通りに動作しない場合がある
       // 現在の実装では順序の変更が検出される
       expect(result.delta.changeCount).toBeGreaterThan(0);
     });
 
     it('配列の順序を考慮するオプションを適用する', () => {
-      const result = calculateArrayDelta(
-        [1, 2, 3],
-        [3, 1, 2],
-        { arrayOrderMatters: true }
-      );
+      const result = calculateArrayDelta([1, 2, 3], [3, 1, 2], {
+        arrayOrderMatters: true,
+      });
       // 順序を考慮する場合は、位置による変更として検出
       expect(result.delta.changeCount).toBeGreaterThan(0);
     });
@@ -124,7 +126,7 @@ describe('ArrayDeltaCalculator', () => {
       const result = calculateArrayDelta(
         [{ name: 'John', age: 30 }],
         [{ name: 'Jane', age: 30 }],
-        { ignoreProperties: ['age'] }
+        { ignoreProperties: ['age'] },
       );
       expect(result.delta.changeCount).toBe(1);
       expect(result.delta.changes['[0]']).toBeDefined();
@@ -138,8 +140,10 @@ describe('ArrayDeltaCalculator', () => {
 
     it('大きな配列でも正常に動作する', () => {
       const largeArray1 = Array.from({ length: 1000 }, (_, i) => i);
-      const largeArray2 = Array.from({ length: 1000 }, (_, i) => i === 500 ? 999 : i);
-      
+      const largeArray2 = Array.from({ length: 1000 }, (_, i) =>
+        i === 500 ? 999 : i,
+      );
+
       const result = calculateArrayDelta(largeArray1, largeArray2);
       expect(result.delta.changeCount).toBe(1);
       expect(result.delta.changes['[500]']).toBeDefined();

@@ -128,7 +128,6 @@ describe('calculateObjectDelta (microdiff-based)', () => {
       // 現在の実装では変更が検出される
       expect(result.delta.changeCount).toBe(1);
     });
-
   });
 
   describe('パフォーマンスとエラーハンドリング', () => {

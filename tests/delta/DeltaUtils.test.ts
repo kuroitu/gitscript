@@ -69,16 +69,16 @@ describe('DeltaUtils', () => {
   describe('createDeltaFromChanges', () => {
     it('変更情報からObjectDeltaを正しく作成する', () => {
       const changes = {
-        'name': {
+        name: {
           type: PropertyChangeType.Modified,
           oldValue: 'John',
           newValue: 'Jane',
         },
-        'age': {
+        age: {
           type: PropertyChangeType.Added,
           newValue: 30,
         },
-        'email': {
+        email: {
           type: PropertyChangeType.Removed,
           oldValue: 'john@example.com',
         },
@@ -103,12 +103,12 @@ describe('DeltaUtils', () => {
 
     it('複数の同じタイプの変更を正しくカウントする', () => {
       const changes = {
-        'a': { type: PropertyChangeType.Added, newValue: 1 },
-        'b': { type: PropertyChangeType.Added, newValue: 2 },
-        'c': { type: PropertyChangeType.Removed, oldValue: 3 },
-        'd': { type: PropertyChangeType.Removed, oldValue: 4 },
-        'e': { type: PropertyChangeType.Modified, oldValue: 5, newValue: 6 },
-        'f': { type: PropertyChangeType.Modified, oldValue: 7, newValue: 8 },
+        a: { type: PropertyChangeType.Added, newValue: 1 },
+        b: { type: PropertyChangeType.Added, newValue: 2 },
+        c: { type: PropertyChangeType.Removed, oldValue: 3 },
+        d: { type: PropertyChangeType.Removed, oldValue: 4 },
+        e: { type: PropertyChangeType.Modified, oldValue: 5, newValue: 6 },
+        f: { type: PropertyChangeType.Modified, oldValue: 7, newValue: 8 },
       };
       const result = createDeltaFromChanges(changes);
       expect(result.changeCount).toBe(6);
@@ -145,7 +145,13 @@ describe('DeltaUtils', () => {
     });
 
     it('複雑なネストパスを正しく処理する', () => {
-      const result = convertObjectPathToChangeKey(['data', 'items', 2, 'details', 'value']);
+      const result = convertObjectPathToChangeKey([
+        'data',
+        'items',
+        2,
+        'details',
+        'value',
+      ]);
       expect(result).toBe('value');
     });
   });
@@ -189,7 +195,11 @@ describe('DeltaUtils', () => {
     });
 
     it('複雑なパスの最初の要素を返す', () => {
-      const result = convertSetMapPathToChangeKey(['item_0', 'nested', 'value']);
+      const result = convertSetMapPathToChangeKey([
+        'item_0',
+        'nested',
+        'value',
+      ]);
       expect(result).toBe('item_0');
     });
   });

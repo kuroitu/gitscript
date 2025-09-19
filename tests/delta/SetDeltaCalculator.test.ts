@@ -88,7 +88,7 @@ describe('SetDeltaCalculator', () => {
       const obj1 = { id: 1, name: 'John' };
       const obj2 = { id: 2, name: 'Jane' };
       const obj3 = { id: 3, name: 'Bob' };
-      
+
       const oldSet = new Set([obj1, obj2]);
       const newSet = new Set([obj1, obj3]);
       const result = calculateSetDelta(oldSet, newSet);
@@ -106,8 +106,10 @@ describe('SetDeltaCalculator', () => {
 
     it('大きなSetでも正常に動作する', () => {
       const oldSet = new Set(Array.from({ length: 1000 }, (_, i) => i));
-      const newSet = new Set(Array.from({ length: 1000 }, (_, i) => i === 500 ? 999 : i));
-      
+      const newSet = new Set(
+        Array.from({ length: 1000 }, (_, i) => (i === 500 ? 999 : i)),
+      );
+
       const result = calculateSetDelta(oldSet, newSet);
       expect(result.delta.changeCount).toBeGreaterThan(0);
       expect(result.delta.changes['__size__']).toBeDefined();
@@ -125,7 +127,7 @@ describe('SetDeltaCalculator', () => {
       const oldSet = new Set([1, 2, 3]);
       const newSet = new Set([1, 2, 4]);
       const result = calculateSetDelta(oldSet, newSet, {
-        ignoreProperties: ['__size__']
+        ignoreProperties: ['__size__'],
       });
       expect(result.delta.changeCount).toBeGreaterThan(0);
     });
