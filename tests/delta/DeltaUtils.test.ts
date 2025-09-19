@@ -236,7 +236,9 @@ describe('DeltaUtils', () => {
         handleDeltaCalculationError(new Error('Original'), 'calculate delta');
       } catch (error) {
         expect(error).toBeInstanceOf(DeltaCalculationError);
-        expect(error.message).toContain('Failed to calculate delta');
+        expect((error as DeltaCalculationError).message).toContain(
+          'Failed to calculate delta',
+        );
       }
     });
   });

@@ -172,13 +172,13 @@ describe('MapDeltaCalculator', () => {
     });
 
     it('混合型キーのMapの差分を計算する', () => {
-      const oldMap = new Map([
+      const oldMap = new Map<unknown, unknown>([
         ['string', 1],
         [123, 'number'],
         [true, 'boolean'],
         [null, 'null'],
       ]);
-      const newMap = new Map([
+      const newMap = new Map<unknown, unknown>([
         ['string', 2],
         [123, 'number'],
         [true, 'boolean'],
