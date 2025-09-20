@@ -1,23 +1,6 @@
-/**
- * 暗号化機能の低級レイヤ
- *
- * 外部ライブラリ（crypto）の直接使用を避け、
- * 例外ハンドリングを行うラッパー層
- */
-
+import { CryptoError } from '@/core/crypto/error';
 import { isBuffer, isNativeError } from '@/core/utils';
-import { GitScriptError } from '@/types';
-import { createHash as nodeCreateHash } from 'crypto';
-
-/**
- * 暗号化関連のエラー
- */
-export class CryptoError extends GitScriptError {
-  constructor(message: string, cause?: Error) {
-    super(`Crypto error: ${message}`, 'CRYPTO_ERROR', cause);
-    this.name = 'CryptoError';
-  }
-}
+import { createHash } from 'crypto';
 
 /**
  * SHA-1ハッシュを計算する
@@ -31,7 +14,7 @@ export function calculateSha1(
   encoding: BufferEncoding = 'utf8',
 ): string {
   try {
-    const hash = nodeCreateHash('sha1');
+    const hash = createHash('sha1');
 
     if (isBuffer(data)) {
       hash.update(data);
@@ -43,7 +26,7 @@ export function calculateSha1(
   } catch (error) {
     throw new CryptoError(
       `Failed to calculate SHA-1 hash: ${isNativeError(error) ? error.message : 'Unknown error'}`,
-      isNativeError(error) ? error : undefined,
+      isNativeError(error) ? error : new Error(String(error)),
     );
   }
 }
@@ -62,11 +45,9 @@ export function calculateSha1FromMultiple(
   encoding: BufferEncoding = 'utf8',
 ): string {
   try {
-    const hash = nodeCreateHash('sha1');
+    const hash = createHash('sha1');
 
-    for (let i = 0; i < dataList.length; i++) {
-      const data = dataList[i];
-
+    dataList.forEach((data, i) => {
       if (isBuffer(data)) {
         hash.update(data);
       } else {
@@ -77,13 +58,13 @@ export function calculateSha1FromMultiple(
       if (i < dataList.length - 1) {
         hash.update(separator, encoding);
       }
-    }
+    });
 
     return hash.digest('hex');
   } catch (error) {
     throw new CryptoError(
       `Failed to calculate SHA-1 hash from multiple data: ${isNativeError(error) ? error.message : 'Unknown error'}`,
-      isNativeError(error) ? error : undefined,
+      isNativeError(error) ? error : new Error(String(error)),
     );
   }
 }
@@ -95,7 +76,7 @@ export function calculateSha1FromMultiple(
 export function isCryptoAvailable(): boolean {
   try {
     // 簡単なテストでcrypto機能が利用可能かチェック
-    nodeCreateHash('sha1').update('test').digest('hex');
+    createHash('sha1').update('test').digest('hex');
     return true;
   } catch {
     return false;
