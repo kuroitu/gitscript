@@ -1,6 +1,5 @@
 import { GitScriptError } from '@/types/errors/base';
 
-
 /**
  * シリアライゼーション関連のエラー
  */

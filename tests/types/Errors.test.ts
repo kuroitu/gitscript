@@ -3,7 +3,7 @@
  */
 
 import { CryptoError } from '@/core/crypto/CryptoProvider';
-import { SerializationError } from '@/core/serialization/JsonProvider';
+import { SerializationError } from '@/core/serialization/json-provider';
 import {
   ArgumentError,
   DataTypeDetectionError,

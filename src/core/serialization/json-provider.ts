@@ -1,10 +1,3 @@
-/**
- * JSON操作の最小限ラッパー
- *
- * 純粋なオブジェクトのJSON操作を提供し、
- * 統一されたエラーハンドリングを行う
- */
-
 import { SerializationError } from '@/core/serialization/errors';
 import { isNativeError } from '@/core/utils';
 

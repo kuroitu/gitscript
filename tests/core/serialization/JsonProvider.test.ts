@@ -6,7 +6,7 @@ import {
   deserialize,
   SerializationError,
   stringifyCompact,
-} from '@/core/serialization/JsonProvider';
+} from '@/core/serialization/json-provider';
 import { describe, expect, it } from 'vitest';
 
 describe('JsonProvider (Minimal)', () => {
@@ -78,7 +78,11 @@ describe('JsonProvider (Minimal)', () => {
     });
 
     it('should throw SerializationError for invalid objects', () => {
-      const invalidObj = { get value() { throw new Error('test'); } };
+      const invalidObj = {
+        get value() {
+          throw new Error('test');
+        },
+      };
 
       expect(() => stringifyCompact(invalidObj)).toThrow(SerializationError);
     });

@@ -1,6 +1,5 @@
 export * from '@/types/errors/argument';
 export * from '@/types/errors/base';
-export * from '@/types/errors/circular';
 export * from '@/types/errors/commit';
 export * from '@/types/errors/delta';
 export * from '@/types/errors/object';

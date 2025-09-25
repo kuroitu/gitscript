@@ -1,10 +1,3 @@
-/**
- * 深いコピー機能
- *
- * 純粋なオブジェクト（関数やシンボルを含まない）の深いコピーを提供し、
- * 循環参照を適切に処理する
- */
-
 import { SerializationError } from '@/core/serialization/errors';
 import { DeepCopyResult } from '@/core/serialization/types';
 import { isNativeError } from '@/core/utils';

@@ -2,8 +2,7 @@
  * DeepCopyProvider のテスト（純粋なオブジェクト版）
  */
 
-import { deepCopy } from '@/core/serialization/DeepCopyProvider';
-import { SerializationError } from '@/core/serialization/errors';
+import { deepCopy } from '@/core/serialization/deep-copy';
 import { describe, expect, it } from 'vitest';
 
 describe('DeepCopyProvider (Pure Objects)', () => {
@@ -78,10 +77,12 @@ describe('DeepCopyProvider (Pure Objects)', () => {
         ['b', 2],
       ]);
       const result = deepCopy(original);
-      expect(result.data).toEqual(new Map([
-        ['a', 1],
-        ['b', 2],
-      ]));
+      expect(result.data).toEqual(
+        new Map([
+          ['a', 1],
+          ['b', 2],
+        ]),
+      );
       expect(result.data).not.toBe(original);
     });
 
