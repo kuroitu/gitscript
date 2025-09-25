@@ -1,4 +1,4 @@
-import { CryptoError } from '@/core/crypto/error';
+import { CryptoError } from '@/core/crypto/errors';
 import { isBuffer, isNativeError } from '@/core/utils';
 import { createHash } from 'crypto';
 

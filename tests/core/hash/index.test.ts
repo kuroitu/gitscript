@@ -16,7 +16,7 @@ import {
   verifyHashIntegrity,
   verifyObjectHashIntegrity,
 } from '@/core/hash/HashValidator';
-import { InvalidHashError, TypeError } from '@/types/Errors';
+import { InvalidHashError, TypeError } from '@/types/errors';
 import { describe, expect, it } from 'vitest';
 
 describe('Hash Module Integration', () => {

@@ -5,6 +5,7 @@
  * シリアライゼーションに必要な情報を提供する
  */
 
+import { DataTypeDetectionError } from '@/core/serialization/errors';
 import { DataType, DataTypeInfo } from '@/core/serialization/types';
 import {
   isArray,
@@ -22,7 +23,6 @@ import {
   isSymbol,
   isUndefined,
 } from '@/core/utils';
-import { DataTypeDetectionError } from '@/types';
 
 /**
  * データ型を検出する
@@ -50,7 +50,7 @@ export function detectDataType(value: unknown): DataTypeInfo {
  * @param value 分析する値
  * @returns データ型情報
  */
-export function analyzeValue(value: unknown): DataTypeInfo {
+function analyzeValue(value: unknown): DataTypeInfo {
   // null チェック
   if (isNull(value)) {
     return { type: DataType.null };

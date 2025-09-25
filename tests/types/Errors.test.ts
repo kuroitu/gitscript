@@ -10,7 +10,7 @@ import {
   GitScriptError,
   ObjectNotFoundError,
   RepositoryNotFoundError,
-} from '@/types/Errors';
+} from '@/types/errors';
 import { describe, expect, it } from 'vitest';
 
 describe('Error Classes', () => {

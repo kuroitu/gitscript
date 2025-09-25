@@ -5,5 +5,5 @@
  */
 
 export * from '@/types/constants';
-export * from '@/types/Errors';
+export * from '@/types/errors';
 export * from '@/types/ObjectDelta';

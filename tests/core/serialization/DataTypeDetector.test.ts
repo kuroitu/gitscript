@@ -2,10 +2,7 @@
  * DataTypeDetector のテスト
  */
 
-import {
-  analyzeValue,
-  detectDataType,
-} from '@/core/serialization/DataTypeDetector';
+import { analyzeValue, detectDataType } from '@/core/serialization/detector';
 import { DataType } from '@/core/serialization/types';
 import {
   isArray,
@@ -15,8 +12,8 @@ import {
   isObject,
   isPrimitive,
   isSymbol,
-} from '@/core/utils/typeGuards';
-import { DataTypeDetectionError } from '@/types/Errors';
+} from '@/core/utils/type-guards';
+import { DataTypeDetectionError } from '@/types/errors';
 import { isDate, isMap, isRegExp, isSet } from 'util/types';
 import { describe, expect, it } from 'vitest';
 

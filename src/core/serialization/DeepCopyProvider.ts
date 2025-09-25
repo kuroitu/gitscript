@@ -1,12 +1,13 @@
 /**
  * 深いコピー機能
  *
- * JavaScriptオブジェクトの深いコピーを提供し、
+ * lodashのcloneDeepを使用してJavaScriptオブジェクトの深いコピーを提供し、
  * 循環参照や特殊な型も適切に処理する
  */
 
-import { detectDataType } from '@/core/serialization/DataTypeDetector';
-import { SerializationError } from '@/core/serialization/JsonProvider';
+import { cloneDeep } from 'lodash';
+import { detectDataType } from '@/core/serialization/detector';
+import { SerializationError } from '@/core/serialization/errors';
 import {
   CircularReferenceHandling,
   DeepCopyOptions,
@@ -51,13 +52,23 @@ export function deepCopy<T = unknown>(
   };
 
   try {
+    // 循環参照検出用のWeakMap
     const visited = new WeakMap<object, unknown>();
-    const copied = copyValue(obj, visited, defaultOptions);
+    
+    // 特殊な型の事前チェックと循環参照処理
+    const preprocessedObj = preprocessValue(obj, defaultOptions, visited);
+    
+    // lodashのcloneDeepを使用
+    const copied = cloneDeep(preprocessedObj);
+    
+    // Set/Mapを元の型に復元（新しいvisitedマップを使用）
+    const restoreVisited = new WeakMap<object, unknown>();
+    const restored = restoreSpecialTypes(copied, obj, defaultOptions, restoreVisited);
     const duration = performance.now() - startTime;
 
     return {
-      data: copied as T,
-      typeInfo: detectDataType(copied),
+      data: restored as T,
+      typeInfo: detectDataType(restored),
       duration,
     };
   } catch (error) {
@@ -69,16 +80,16 @@ export function deepCopy<T = unknown>(
 }
 
 /**
- * 値のコピーを実行する
- * @param value コピーする値
- * @param visited 訪問済みオブジェクトのマップ
+ * 値の前処理を実行する（lodashのcloneDeepで処理できない型を変換）
+ * @param value 前処理する値
  * @param options コピーオプション
- * @returns コピーされた値
+ * @param visited 訪問済みオブジェクトのマップ
+ * @returns 前処理された値
  */
-function copyValue(
+function preprocessValue(
   value: unknown,
-  visited: WeakMap<object, unknown>,
   options: DeepCopyOptions,
+  visited: WeakMap<object, unknown>,
 ): unknown {
   // null または undefined
   if (isNullOrUndefined(value)) {
@@ -107,37 +118,68 @@ function copyValue(
 
   // Buffer
   if (isBuffer(value)) {
-    return Buffer.from(value);
+    return { __type__: 'Buffer', data: Array.from(value) };
   }
 
   // Date
   if (isDate(value)) {
-    return new Date(value.getTime());
+    return { __type__: 'Date', value: value.getTime() };
   }
 
   // RegExp
   if (isRegExp(value)) {
-    return new RegExp(value.source, value.flags);
-  }
-
-  // Array
-  if (isArray(value)) {
-    return copyArray(value, visited, options);
+    return { __type__: 'RegExp', source: value.source, flags: value.flags };
   }
 
   // Set
   if (isSet(value)) {
-    return copySet(value, visited, options);
+    return setToObject(value, options, visited);
   }
 
   // Map
   if (isMap(value)) {
-    return copyMap(value, visited, options);
+    return mapToObject(value, options, visited);
+  }
+
+  // Array
+  if (isArray(value)) {
+    // 循環参照チェック
+    if (visited.has(value)) {
+      return handleCircularReference(visited.get(value), options);
+    }
+
+    const processed: Record<string, unknown> = { __type__: 'Array' };
+    visited.set(value, processed);
+    
+    for (let i = 0; i < value.length; i++) {
+      processed[i.toString()] = preprocessValue(value[i], options, visited);
+    }
+    
+    return processed;
   }
 
   // 通常のオブジェクト
   if (isObject(value)) {
-    return copyObject(value, visited, options);
+    // 循環参照チェック
+    if (visited.has(value)) {
+      return handleCircularReference(visited.get(value), options);
+    }
+
+    const processed: Record<string | symbol, unknown> = {};
+    visited.set(value, processed);
+    
+    // 通常のプロパティを処理
+    for (const [key, val] of Object.entries(value)) {
+      processed[key] = preprocessValue(val, options, visited);
+    }
+
+    // シンボルプロパティを処理
+    for (const symbolKey of Object.getOwnPropertySymbols(value)) {
+      const val = (value as Record<string | symbol, unknown>)[symbolKey];
+      processed[symbolKey] = preprocessValue(val, options, visited);
+    }
+
+    return processed;
   }
 
   // その他の型
@@ -184,120 +226,167 @@ function handleFunction(
 }
 
 /**
- * 配列のコピー
- * @param arr コピーする配列
- * @param visited 訪問済みオブジェクトのマップ
+ * Setをオブジェクトに変換する
+ * @param set 変換するSet
  * @param options コピーオプション
- * @returns コピーされた配列
- */
-function copyArray(
-  arr: unknown[],
-  visited: WeakMap<object, unknown>,
-  options: DeepCopyOptions,
-): unknown[] {
-  // 循環参照チェック
-  if (visited.has(arr)) {
-    return [handleCircularReference(visited.get(arr), options)];
-  }
-
-  const copied: unknown[] = [];
-  visited.set(arr, copied);
-
-  for (const item of arr) {
-    copied.push(copyValue(item, visited, options));
-  }
-
-  return copied;
-}
-
-/**
- * Setのコピー
- * @param set コピーするSet
  * @param visited 訪問済みオブジェクトのマップ
- * @param options コピーオプション
- * @returns コピーされたSet
+ * @returns 変換されたオブジェクト
  */
-function copySet(
+function setToObject(
   set: Set<unknown>,
-  visited: WeakMap<object, unknown>,
   options: DeepCopyOptions,
-): Set<unknown> {
+  visited: WeakMap<object, unknown>,
+): Record<string, unknown> {
   // 循環参照チェック
   if (visited.has(set)) {
-    return handleCircularReference(visited.get(set), options) as Set<unknown>;
+    return handleCircularReference(visited.get(set), options) as Record<string, unknown>;
   }
 
-  const copied = new Set<unknown>();
-  visited.set(set, copied);
-
+  const obj: Record<string, unknown> = { __type__: 'Set' };
+  visited.set(set, obj);
+  
+  let index = 0;
   for (const item of set) {
-    copied.add(copyValue(item, visited, options));
+    obj[`item_${index}`] = preprocessValue(item, options, visited);
+    index++;
   }
-
-  return copied;
+  
+  return obj;
 }
 
 /**
- * Mapのコピー
- * @param map コピーするMap
- * @param visited 訪問済みオブジェクトのマップ
+ * Mapをオブジェクトに変換する
+ * @param map 変換するMap
  * @param options コピーオプション
- * @returns コピーされたMap
+ * @param visited 訪問済みオブジェクトのマップ
+ * @returns 変換されたオブジェクト
  */
-function copyMap(
+function mapToObject(
   map: Map<unknown, unknown>,
-  visited: WeakMap<object, unknown>,
   options: DeepCopyOptions,
-): Map<unknown, unknown> {
+  visited: WeakMap<object, unknown>,
+): Record<string, unknown> {
   // 循環参照チェック
   if (visited.has(map)) {
-    return handleCircularReference(visited.get(map), options) as Map<
-      unknown,
-      unknown
-    >;
+    return handleCircularReference(visited.get(map), options) as Record<string, unknown>;
   }
 
-  const copied = new Map<unknown, unknown>();
-  visited.set(map, copied);
-
+  const obj: Record<string, unknown> = { __type__: 'Map' };
+  visited.set(map, obj);
+  
   for (const [key, value] of map) {
-    const copiedKey = copyValue(key, visited, options);
-    const copiedValue = copyValue(value, visited, options);
-    copied.set(copiedKey, copiedValue);
+    const keyStr = typeof key === 'string' ? key : `key_${String(key)}`;
+    obj[keyStr] = preprocessValue(value, options, visited);
   }
-
-  return copied;
+  
+  return obj;
 }
 
 /**
- * オブジェクトのコピー
- * @param obj コピーするオブジェクト
- * @param visited 訪問済みオブジェクトのマップ
+ * 特殊な型を復元する
+ * @param copied コピーされたオブジェクト
+ * @param original 元のオブジェクト
  * @param options コピーオプション
- * @returns コピーされたオブジェクト
+ * @returns 復元されたオブジェクト
  */
-function copyObject(
-  obj: object,
-  visited: WeakMap<object, unknown>,
+function restoreSpecialTypes(
+  copied: unknown,
+  original: unknown,
   options: DeepCopyOptions,
-): object {
+  visited: WeakMap<object, unknown> = new WeakMap<object, unknown>(),
+): unknown {
   // 循環参照チェック
-  if (visited.has(obj)) {
-    return handleCircularReference(visited.get(obj), options) as object;
+  if (isObject(original) && visited.has(original)) {
+    return handleCircularReference(visited.get(original), options);
   }
 
-  const copied: Record<string | symbol, unknown> = {};
-  visited.set(obj, copied);
+  if (isObject(copied)) {
+    const copiedObj = copied as Record<string, unknown>;
 
-  // 通常のプロパティをコピー
-  for (const [key, value] of Object.entries(obj)) {
-    copied[key] = copyValue(value, visited, options);
-  }
+    // Dateの復元
+    if (copiedObj.__type__ === 'Date' && typeof copiedObj.value === 'number') {
+      return new Date(copiedObj.value);
+    }
 
-  // シンボルプロパティをコピー
-  for (const symbolKey of Object.getOwnPropertySymbols(obj)) {
-    const value = (obj as Record<string | symbol, unknown>)[symbolKey];
-    copied[symbolKey] = copyValue(value, visited, options);
+    // RegExpの復元
+    if (copiedObj.__type__ === 'RegExp' && 
+        typeof copiedObj.source === 'string' && 
+        typeof copiedObj.flags === 'string') {
+      return new RegExp(copiedObj.source, copiedObj.flags);
+    }
+
+    // Bufferの復元
+    if (copiedObj.__type__ === 'Buffer' && Array.isArray(copiedObj.data)) {
+      return Buffer.from(copiedObj.data as number[]);
+    }
+
+    // Arrayの復元
+    if (copiedObj.__type__ === 'Array' && isArray(original)) {
+      const restoredArray: unknown[] = [];
+      for (let i = 0; i < (original as unknown[]).length; i++) {
+        const key = i.toString();
+        if (key in copiedObj) {
+          restoredArray[i] = restoreSpecialTypes(
+            copiedObj[key], 
+            (original as unknown[])[i], 
+            options, 
+            visited
+          );
+        }
+      }
+      return restoredArray;
+    }
+
+    // Setの復元
+    if (copiedObj.__type__ === 'Set' && isSet(original)) {
+      const restoredSet = new Set<unknown>();
+      for (const [key, value] of Object.entries(copiedObj)) {
+        if (key.startsWith('item_')) {
+          const index = parseInt(key.slice(5), 10);
+          const originalItem = Array.from(original)[index];
+          restoredSet.add(restoreSpecialTypes(value, originalItem, options, visited));
+        }
+      }
+      return restoredSet;
+    }
+
+    // Mapの復元
+    if (copiedObj.__type__ === 'Map' && isMap(original)) {
+      const restoredMap = new Map<unknown, unknown>();
+      for (const [key, value] of Object.entries(copiedObj)) {
+        if (key !== '__type__') {
+          const originalKey = key.startsWith('key_') ? key.slice(4) : key;
+          const originalValue = original.get(originalKey);
+          restoredMap.set(originalKey, restoreSpecialTypes(value, originalValue, options, visited));
+        }
+      }
+      return restoredMap;
+    }
+
+    // 通常のオブジェクトの再帰処理
+    if (isObject(original)) {
+      const originalObj = original as Record<string | symbol, unknown>;
+      const restored: Record<string | symbol, unknown> = {};
+      visited.set(original, restored);
+      
+      for (const [key, value] of Object.entries(copiedObj)) {
+        if (key !== '__type__') {
+          const originalValue = originalObj[key];
+          restored[key] = restoreSpecialTypes(value, originalValue, options, visited);
+        }
+      }
+
+      // シンボルプロパティの復元
+      for (const symbolKey of Object.getOwnPropertySymbols(originalObj)) {
+        const value = copiedObj[symbolKey as unknown as string];
+        if (value !== undefined) {
+          const originalValue = originalObj[symbolKey];
+          restored[symbolKey] = restoreSpecialTypes(value, originalValue, options, visited);
+        }
+      }
+
+      return restored;
+    }
   }
 
   return copied;
@@ -326,3 +415,4 @@ function handleCircularReference(
       return value;
   }
 }
+

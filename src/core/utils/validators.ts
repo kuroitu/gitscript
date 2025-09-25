@@ -1,11 +1,10 @@
-import { isArray, isBuffer, isString } from '@/core/utils/typeGuards';
-import { ArgumentError, TypeError } from '@/types/Errors';
-
-/**
- * 型バリデーション用のユーティリティ関数
- *
- * 型チェックとエラー投げを組み合わせた関数群
- */
+import {
+  isArray,
+  isBuffer,
+  isObject,
+  isString,
+} from '@/core/utils/type-guards';
+import { ArgumentError, TypeError } from '@/types';
 
 /**
  * 値が文字列であることを検証し、そうでなければエラーを投げる
@@ -20,6 +19,23 @@ export function validateString(
 ): string {
   if (!isString(value)) {
     throw new TypeError('string', value, parameterName);
+  }
+  return value;
+}
+
+/**
+ * 値がオブジェクトであることを検証し、そうでなければエラーを投げる
+ * @param value 検証する値
+ * @param parameterName パラメータ名（エラーメッセージ用）
+ * @returns オブジェクトとして型アサーションされた値
+ * @throws TypeError 値がオブジェクトでない場合
+ */
+export function validateObject(
+  value: unknown,
+  parameterName = 'value',
+): object {
+  if (!isObject(value)) {
+    throw new TypeError('object', value, parameterName);
   }
   return value;
 }

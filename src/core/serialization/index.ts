@@ -21,10 +21,7 @@ export type {
 export { SerializationError } from '@/core/serialization/JsonProvider';
 
 // データ型検出
-export {
-  analyzeValue,
-  detectDataType,
-} from '@/core/serialization/DataTypeDetector';
+export { analyzeValue, detectDataType } from '@/core/serialization/detector';
 
 // シリアライゼーション
 export {

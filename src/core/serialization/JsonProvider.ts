@@ -5,7 +5,8 @@
  * 例外ハンドリングを行うラッパー層
  */
 
-import { detectDataType } from '@/core/serialization/DataTypeDetector';
+import { detectDataType } from '@/core/serialization/detector';
+import { SerializationError } from '@/core/serialization/errors';
 import {
   DeserializationOptions,
   DeserializationResult,
@@ -17,17 +18,6 @@ import {
   UndefinedHandling,
 } from '@/core/serialization/types';
 import { isFunction, isNativeError, isSymbol, isUndefined } from '@/core/utils';
-import { GitScriptError } from '@/types';
-
-/**
- * シリアライゼーション関連のエラー
- */
-export class SerializationError extends GitScriptError {
-  constructor(message: string, cause?: Error) {
-    super(`Serialization error: ${message}`, 'SERIALIZATION_ERROR', cause);
-    this.name = 'SerializationError';
-  }
-}
 
 /**
  * オブジェクトをコンパクトなJSON文字列にシリアライズする（スペースなし）
