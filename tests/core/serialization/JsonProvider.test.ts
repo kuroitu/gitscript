@@ -1,76 +1,42 @@
 /**
- * JsonProvider のテスト（拡張版）
+ * JsonProvider のテスト（最小限版）
  */
 
 import {
   deserialize,
   SerializationError,
-  serialize,
   stringifyCompact,
 } from '@/core/serialization/JsonProvider';
-import { SerializationFormat } from '@/core/serialization/types';
 import { describe, expect, it } from 'vitest';
 
-describe('JsonProvider (Extended)', () => {
-  describe('serialize', () => {
-    it('should serialize with compact format', () => {
+describe('JsonProvider (Minimal)', () => {
+  describe('stringifyCompact', () => {
+    it('should stringify compact JSON', () => {
       const obj = { a: 1, b: 2 };
-      const result = serialize(obj, { format: SerializationFormat.compact });
+      const result = stringifyCompact(obj);
 
-      expect(result.data).toBe('{"a":1,"b":2}');
-      expect(result.format).toBe(SerializationFormat.compact);
-      expect(result.typeInfo.type).toBe('object');
-      expect(result.duration).toBeGreaterThan(0);
+      expect(result).toBe('{"a":1,"b":2}');
     });
 
-    it('should serialize with pretty format', () => {
-      const obj = { a: 1, b: 2 };
-      const result = serialize(obj, {
-        format: SerializationFormat.pretty,
-        indent: 2,
-      });
-
-      expect(result.data).toContain('{\n  "a": 1,\n  "b": 2\n}');
-      expect(result.format).toBe(SerializationFormat.pretty);
+    it('should handle null and undefined', () => {
+      expect(stringifyCompact(null)).toBe('null');
+      expect(stringifyCompact(undefined)).toBe(undefined);
     });
 
-    it('should serialize with default format', () => {
-      const obj = { a: 1, b: 2 };
-      const result = serialize(obj);
-
-      expect(result.data).toBe('{"a":1,"b":2}');
-      expect(result.format).toBe(SerializationFormat.compact);
+    it('should handle symbols', () => {
+      expect(stringifyCompact(Symbol('test'))).toBe(undefined);
     });
 
-    it('should handle function with replace option', () => {
-      const obj = { func: () => 'test' };
-      const result = serialize(obj, { functionHandling: 'replace' });
-
-      expect(result.data).toBe('{}'); // 関数はデフォルトで無視される
+    it('should handle arrays', () => {
+      const arr = [1, 2, 3];
+      const result = stringifyCompact(arr);
+      expect(result).toBe('[1,2,3]');
     });
 
-    it('should handle function with replace option in direct serialization', () => {
-      // 関数を直接シリアライズする場合のテスト
-      const func = () => 'test';
-
-      // 関数を直接シリアライズしようとすると、replacerが呼ばれる
-      const result = serialize(func, { functionHandling: 'replace' });
-      expect(result.data).toBe('null'); // 関数はnullに変換される
-    });
-
-    it('should handle function with ignore option', () => {
-      const obj = { func: () => 'test' };
-      const result = serialize(obj, { functionHandling: 'ignore' });
-
-      expect(result.data).toBe('{}');
-    });
-
-    it('should throw error for function with error option', () => {
-      const obj = { func: () => 'test' };
-
-      // 現在の実装では関数はデフォルトで無視されるため、エラーは発生しない
-      const result = serialize(obj, { functionHandling: 'error' });
-      expect(result.data).toBe('{}');
+    it('should handle nested objects', () => {
+      const obj = { a: { b: { c: 1 } } };
+      const result = stringifyCompact(obj);
+      expect(result).toBe('{"a":{"b":{"c":1}}}');
     });
   });
 
@@ -79,39 +45,27 @@ describe('JsonProvider (Extended)', () => {
       const json = '{"a":1,"b":2}';
       const result = deserialize(json);
 
-      expect(result.data).toEqual({ a: 1, b: 2 });
-      expect(result.typeInfo.type).toBe('object');
-      expect(result.duration).toBeGreaterThan(0);
+      expect(result).toEqual({ a: 1, b: 2 });
     });
 
-    it('should deserialize with custom reviver', () => {
-      const json = '{"a":1,"b":2}';
-      const result = deserialize(json, {
-        reviver: (key, value) => (key === 'a' ? (value as number) * 2 : value),
-      });
+    it('should deserialize arrays', () => {
+      const json = '[1,2,3]';
+      const result = deserialize(json);
 
-      expect(result.data).toEqual({ a: 2, b: 2 });
+      expect(result).toEqual([1, 2, 3]);
+    });
+
+    it('should deserialize nested objects', () => {
+      const json = '{"a":{"b":{"c":1}}}';
+      const result = deserialize(json);
+
+      expect(result).toEqual({ a: { b: { c: 1 } } });
     });
 
     it('should throw error for invalid JSON', () => {
-      expect(() => deserialize('invalid json')).toThrow(SerializationError);
-    });
-  });
+      const invalidJson = '{invalid json}';
 
-  describe('stringifyCompact (legacy)', () => {
-    it('should stringify compact JSON', () => {
-      const obj = { a: 1, b: 2 };
-      const result = stringifyCompact(obj);
-      expect(result).toBe('{"a":1,"b":2}');
-    });
-
-    it('should handle null and undefined', () => {
-      expect(stringifyCompact(null)).toBe('null');
-      expect(stringifyCompact(undefined)).toBe('null');
-    });
-
-    it('should handle symbols', () => {
-      expect(stringifyCompact(Symbol('test'))).toBe('null');
+      expect(() => deserialize(invalidJson)).toThrow(SerializationError);
     });
   });
 
@@ -120,122 +74,42 @@ describe('JsonProvider (Extended)', () => {
       const obj: any = { a: 1 };
       obj.self = obj;
 
-      expect(() => serialize(obj)).toThrow(SerializationError);
+      expect(() => stringifyCompact(obj)).toThrow(SerializationError);
     });
 
     it('should throw SerializationError for invalid objects', () => {
-      const obj = {
-        get value() {
-          throw new Error('Access error');
-        },
-      };
+      const invalidObj = { get value() { throw new Error('test'); } };
 
-      expect(() => serialize(obj)).toThrow(SerializationError);
-    });
-
-    it('should handle JSON.stringify errors in stringifyPretty', () => {
-      // 循環参照を含むオブジェクトでstringifyPrettyをテスト
-      const obj: any = { a: 1 };
-      obj.self = obj;
-
-      expect(() => {
-        // stringifyPrettyは内部でstringifyWithOptionsを呼び出す
-        serialize(obj, { format: SerializationFormat.pretty, indent: 2 });
-      }).toThrow(SerializationError);
-    });
-
-    it('should handle JSON.stringify errors in stringifyWithOptions', () => {
-      // 循環参照を含むオブジェクトでstringifyWithOptionsをテスト
-      const obj: any = { a: 1 };
-      obj.self = obj;
-
-      expect(() => {
-        // stringifyWithOptionsは内部でJSON.stringifyを呼び出す
-        serialize(obj, {
-          format: SerializationFormat.json,
-          functionHandling: 'error',
-          symbolHandling: 'error',
-          undefinedHandling: 'error',
-        });
-      }).toThrow(SerializationError);
-    });
-
-    it('should handle function with error option in replacer', () => {
-      const obj = { func: () => 'test' };
-
-      expect(() => {
-        serialize(obj, {
-          functionHandling: 'error',
-          format: SerializationFormat.json,
-        });
-      }).toThrow(SerializationError);
-    });
-
-    it('should handle symbol with error option in replacer', () => {
-      const obj = { [Symbol('test')]: 'value' };
-
-      // シンボルプロパティはObject.entriesで取得されないため、エラーは発生しない
-      // 代わりに、シンボル値を直接テストする
-      const result = serialize(obj, {
-        symbolHandling: 'error',
-        format: SerializationFormat.json,
-      });
-      expect(result.data).toBe('{}');
-    });
-
-    it('should handle symbol with replace option in direct serialization', () => {
-      // シンボルを直接シリアライズする場合のテスト
-      const sym = Symbol('test');
-
-      const result = serialize(sym, { symbolHandling: 'replace' });
-      expect(result.data).toBe('null'); // シンボルはnullに変換される
-    });
-
-    it('should handle symbol with ignore option in direct serialization', () => {
-      // シンボルを直接シリアライズする場合のテスト
-      const sym = Symbol('test');
-
-      const result = serialize(sym, { symbolHandling: 'ignore' });
-      expect(result.data).toBe('null'); // undefinedはnullに変換される
-    });
-
-    it('should handle undefined with error option in replacer', () => {
-      const obj = { value: undefined };
-
-      expect(() => {
-        serialize(obj, {
-          undefinedHandling: 'error',
-          format: SerializationFormat.json,
-        });
-      }).toThrow(SerializationError);
-    });
-
-    it('should handle undefined with replace option in direct serialization', () => {
-      // undefinedを直接シリアライズする場合のテスト
-      const result = serialize(undefined, { undefinedHandling: 'replace' });
-      expect(result.data).toBe('null');
-    });
-
-    it('should handle undefined with ignore option in direct serialization', () => {
-      // undefinedを直接シリアライズする場合のテスト
-      const result = serialize(undefined, { undefinedHandling: 'ignore' });
-      expect(result.data).toBe('null'); // undefinedはnullに変換される
+      expect(() => stringifyCompact(invalidObj)).toThrow(SerializationError);
     });
   });
 
-  describe('performance', () => {
-    it('should measure serialization duration', () => {
-      const obj = { a: 1, b: 2, c: 3 };
-      const result = serialize(obj);
-      expect(result.duration).toBeGreaterThan(0);
-      expect(typeof result.duration).toBe('number');
+  describe('integration', () => {
+    it('should work for complete serialization workflow', () => {
+      const original = { name: 'test', value: 42 };
+
+      // シリアライゼーション
+      const serialized = stringifyCompact(original);
+      expect(serialized).toBe('{"name":"test","value":42}');
+
+      // デシリアライゼーション
+      const deserialized = deserialize(serialized);
+      expect(deserialized).toEqual(original);
     });
 
-    it('should measure deserialization duration', () => {
-      const json = '{"a":1,"b":2,"c":3}';
-      const result = deserialize(json);
-      expect(result.duration).toBeGreaterThan(0);
-      expect(typeof result.duration).toBe('number');
+    it('should handle different data types in workflow', () => {
+      const testData = {
+        string: 'hello',
+        number: 42,
+        boolean: true,
+        array: [1, 2, 3],
+        object: { nested: 'value' },
+      };
+
+      const serialized = stringifyCompact(testData);
+      const deserialized = deserialize(serialized);
+
+      expect(deserialized).toEqual(testData);
     });
   });
 });

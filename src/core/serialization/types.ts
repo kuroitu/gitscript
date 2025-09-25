@@ -4,22 +4,9 @@
  * GitScriptライブラリのシリアライゼーション機能で使用する型を定義
  */
 
-/**
- * サポートされるシリアライゼーション形式
- */
-export const SerializationFormat = {
-  /** JSON形式 */
-  json: 'json',
-  /** コンパクト形式 */
-  compact: 'compact',
-  /** 人間が読みやすい形式 */
-  pretty: 'pretty',
-} as const;
-export type SerializationFormat =
-  (typeof SerializationFormat)[keyof typeof SerializationFormat];
 
 /**
- * データ型の種類
+ * データ型の種類（純粋なオブジェクトのみ）
  */
 export const DataType = {
   /** プリミティブ型 */
@@ -36,18 +23,12 @@ export const DataType = {
   date: 'date',
   /** RegExp */
   regexp: 'regexp',
-  /** Function */
-  function: 'function',
-  /** Symbol */
-  symbol: 'symbol',
-  /** Undefined */
-  undefined: 'undefined',
-  /** Null */
-  null: 'null',
   /** Buffer */
   buffer: 'buffer',
   /** BigInt */
   bigint: 'bigint',
+  /** Null */
+  null: 'null',
 } as const;
 export type DataType = (typeof DataType)[keyof typeof DataType];
 
@@ -67,137 +48,16 @@ export interface DataTypeInfo {
     setSize?: number;
     /** Mapの場合の要素数 */
     mapSize?: number;
-    /** 関数の場合の引数の数 */
-    parameterCount?: number;
     /** バッファの場合のサイズ */
     bufferSize?: number;
   };
 }
 
-/**
- * シリアライゼーションオプション
- */
-export interface SerializationOptions {
-  /** シリアライゼーション形式 */
-  format?: SerializationFormat;
-  /** インデントのスペース数（pretty形式の場合） */
-  indent?: number;
-  /** 循環参照の処理方法 */
-  circularReferenceHandling?: CircularReferenceHandling;
-  /** 関数の処理方法 */
-  functionHandling?: FunctionHandling;
-  /** Symbolの処理方法 */
-  symbolHandling?: SymbolHandling;
-  /** undefinedの処理方法 */
-  undefinedHandling?: UndefinedHandling;
-  /** カスタムリプレーサー関数 */
-  replacer?: (key: string, value: unknown) => unknown;
-}
 
 /**
- * デシリアライゼーションオプション
+ * 深いコピーのオプション（純粋なオブジェクト用）
  */
-export interface DeserializationOptions {
-  /** カスタムリバイバー関数 */
-  reviver?: (key: string, value: unknown) => unknown;
-  /** 厳密な型チェックを行うか */
-  strict?: boolean;
-}
-
-/**
- * 循環参照の処理方法
- */
-export const CircularReferenceHandling = {
-  /** エラー */
-  error: 'error',
-  /** 置換 */
-  replace: 'replace',
-  /** 無視 */
-  ignore: 'ignore',
-} as const;
-export type CircularReferenceHandling =
-  (typeof CircularReferenceHandling)[keyof typeof CircularReferenceHandling];
-
-/**
- * 関数の処理方法
- */
-export const FunctionHandling = {
-  /** エラー */
-  error: 'error',
-  /** 置換 */
-  replace: 'replace',
-  /** 無視 */
-  ignore: 'ignore',
-} as const;
-export type FunctionHandling =
-  (typeof FunctionHandling)[keyof typeof FunctionHandling];
-
-/**
- * Symbolの処理方法
- */
-export const SymbolHandling = {
-  /** エラー */
-  error: 'error',
-  /** 置換 */
-  replace: 'replace',
-  /** 無視 */
-  ignore: 'ignore',
-} as const;
-export type SymbolHandling =
-  (typeof SymbolHandling)[keyof typeof SymbolHandling];
-
-/**
- * undefinedの処理方法
- */
-export const UndefinedHandling = {
-  /** エラー */
-  error: 'error',
-  /** 置換 */
-  replace: 'replace',
-  /** 無視 */
-  ignore: 'ignore',
-} as const;
-export type UndefinedHandling =
-  (typeof UndefinedHandling)[keyof typeof UndefinedHandling];
-/**
- * 深いコピーのオプション
- */
-export interface DeepCopyOptions {
-  /** 循環参照の処理方法 */
-  circularReferenceHandling?: CircularReferenceHandling;
-  /** 関数の処理方法 */
-  functionHandling?: FunctionHandling;
-  /** Symbolの処理方法 */
-  symbolHandling?: SymbolHandling;
-  /** カスタムコピー関数 */
-  customCopier?: (value: unknown) => unknown;
-}
-
-/**
- * シリアライゼーション結果
- */
-export interface SerializationResult {
-  /** シリアライズされたデータ */
-  data: string;
-  /** 使用された形式 */
-  format: SerializationFormat;
-  /** データ型情報 */
-  typeInfo: DataTypeInfo;
-  /** シリアライゼーションに要した時間（ミリ秒） */
-  duration: number;
-}
-
-/**
- * デシリアライゼーション結果
- */
-export interface DeserializationResult<T = unknown> {
-  /** デシリアライズされたデータ */
-  data: T;
-  /** データ型情報 */
-  typeInfo: DataTypeInfo;
-  /** デシリアライゼーションに要した時間（ミリ秒） */
-  duration: number;
-}
+export type DeepCopyOptions = Record<string, never>;
 
 /**
  * 深いコピーの結果

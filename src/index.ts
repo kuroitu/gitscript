@@ -54,8 +54,7 @@ export * from '@/types/ObjectDelta';
 export * from '@/delta';
 
 // エラークラスのエクスポート
-export { CryptoError } from '@/core/crypto/CryptoProvider';
-export { SerializationError } from '@/core/serialization/JsonProvider';
+export { SerializationError } from '@/core/serialization/errors';
 export * from '@/types/errors';
 
 // メインのGitScriptクラス（今後実装予定）

@@ -10,23 +10,17 @@ export type {
   DataTypeInfo,
   DeepCopyOptions,
   DeepCopyResult,
-  DeserializationOptions,
-  DeserializationResult,
-  SerializationFormat,
-  SerializationOptions,
-  SerializationResult,
 } from '@/core/serialization/types';
 
 // エラー
-export { SerializationError } from '@/core/serialization/JsonProvider';
+export { SerializationError } from '@/core/serialization/errors';
 
 // データ型検出
-export { analyzeValue, detectDataType } from '@/core/serialization/detector';
+export { detectDataType } from '@/core/serialization/detector';
 
 // シリアライゼーション
 export {
   deserialize,
-  serialize,
   stringifyCompact,
 } from '@/core/serialization/JsonProvider';
 

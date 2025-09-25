@@ -12,7 +12,6 @@ import {
   isBigInt,
   isBuffer,
   isDate,
-  isFunction,
   isMap,
   isNativeError,
   isNull,
@@ -20,8 +19,6 @@ import {
   isPrimitive,
   isRegExp,
   isSet,
-  isSymbol,
-  isUndefined,
 } from '@/core/utils';
 
 /**
@@ -56,34 +53,14 @@ function analyzeValue(value: unknown): DataTypeInfo {
     return { type: DataType.null };
   }
 
-  // undefined チェック
-  if (isUndefined(value)) {
-    return { type: DataType.undefined };
-  }
-
   // BigInt チェック
   if (isBigInt(value)) {
     return { type: DataType.bigint };
   }
 
-  // Symbol チェック
-  if (isSymbol(value)) {
-    return { type: DataType.symbol };
-  }
-
   // プリミティブ型のチェック（string, number, boolean）
   if (isPrimitive(value)) {
     return { type: DataType.primitive };
-  }
-
-  // Function チェック
-  if (isFunction(value)) {
-    return {
-      type: DataType.function,
-      details: {
-        parameterCount: value.length,
-      },
-    };
   }
 
   // Buffer チェック

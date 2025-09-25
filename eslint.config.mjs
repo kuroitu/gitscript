@@ -23,6 +23,7 @@ export default [
           destructuredArrayIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/no-empty-interface': 'off',
     },
   },
   {
