@@ -10,7 +10,8 @@ import { calculateMapDelta } from '@/delta/MapDeltaCalculator';
 import { calculateObjectDelta } from '@/delta/ObjectDeltaCalculator';
 import { calculatePrimitiveDelta } from '@/delta/PrimitiveDeltaCalculator';
 import { calculateSetDelta } from '@/delta/SetDeltaCalculator';
-import { DeltaCalculationOptions, DeltaCalculationResult } from '@/types';
+import { MicrodiffOptions } from '@/delta/microdiff/types';
+import { DeltaCalculationResult } from '@/types';
 
 /**
  * 値の型に応じて適切な差分計算を実行します
@@ -23,11 +24,11 @@ import { DeltaCalculationOptions, DeltaCalculationResult } from '@/types';
 export function calculateDelta(
   oldValue: unknown,
   newValue: unknown,
-  options: DeltaCalculationOptions = {},
+  options: MicrodiffOptions = {},
 ): DeltaCalculationResult {
   // プリミティブ値の場合
   if (isPrimitive(oldValue) && isPrimitive(newValue)) {
-    return calculatePrimitiveDelta(oldValue, newValue, options);
+    return calculatePrimitiveDelta(oldValue, newValue);
   }
 
   // 配列の場合
@@ -55,5 +56,5 @@ export function calculateDelta(
   }
 
   // 型が異なる場合はプリミティブとして扱う
-  return calculatePrimitiveDelta(oldValue, newValue, options);
+  return calculatePrimitiveDelta(oldValue, newValue);
 }

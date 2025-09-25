@@ -1,27 +1,14 @@
-/**
- * 配列差分計算器（microdiffベース）
- *
- * Phase 2.2: 配列の差分計算
- *
- * microdiffライブラリを使用して配列の差分を計算します。
- * 順序を考慮する/しないオプションをサポートします。
- */
-
 import {
   convertArrayPathToChangeKey,
   convertMicrodiffChangeToPropertyChange,
   createDeltaFromChanges,
   handleDeltaCalculationError,
 } from '@/delta/DeltaUtils';
-import {
-  calculateDiff,
-  MicrodiffOptions,
-  MicrodiffResult,
-} from '@/delta/MicrodiffWrapper';
+import { calculateDiff } from '@/delta/microdiff/wrapper';
+import { MicrodiffOptions, MicrodiffResult } from '@/delta/microdiff/types';
 import {
   ChangeKey,
   ChangeSpecialKey,
-  DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
@@ -33,22 +20,21 @@ import {
  *
  * @param oldArray 変更前の配列
  * @param newArray 変更後の配列
- * @param options オプション
+ * @param options microdiffのオプション
  * @returns 差分計算の結果
  */
 export function calculateArrayDelta(
   oldArray: unknown[],
   newArray: unknown[],
-  options: DeltaCalculationOptions = {},
+  options: MicrodiffOptions = {},
 ): DeltaCalculationResult {
   const startTime = performance.now();
 
   try {
-    // microdiffのオプションを設定
+    // microdiffのデフォルトオプションを設定
     const microdiffOptions: MicrodiffOptions = {
       cyclesFix: true,
-      ignoreArrays: !options.arrayOrderMatters,
-      ignoreKeys: options.ignoreProperties,
+      ...options,
     };
 
     // microdiffで差分を計算

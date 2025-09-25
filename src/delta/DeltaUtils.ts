@@ -4,14 +4,30 @@
  * 各差分計算器で共通して使用される処理を提供します。
  */
 
+/**
+ * パスの最初のキーを取得
+ * @param path パス
+ * @returns 最初のキー
+ */
+export function getFirstKey(path: MicrodiffPath): string | number {
+  return path[0];
+}
+
+/**
+ * パスの最後のキーを取得
+ * @param path パス
+ * @returns 最後のキー
+ */
+export function getLastKey(path: MicrodiffPath): string | number {
+  return path[path.length - 1];
+}
+
 import { isNumber, isString } from '@/core/utils';
 import {
-  getFirstKey,
-  getLastKey,
-  MicrodiffChangeType,
   type MicrodiffChange,
   type MicrodiffPath,
-} from '@/delta/MicrodiffWrapper';
+} from '@/delta/microdiff/wrapper';
+import { MicrodiffChangeType } from '@/delta/microdiff/types';
 import {
   ChangeKey,
   ChangeSpecialKey,

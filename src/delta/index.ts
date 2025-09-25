@@ -27,7 +27,7 @@ export {
   type MicrodiffChange,
   type MicrodiffOptions,
   type MicrodiffResult,
-} from '@/delta/MicrodiffWrapper';
+} from '@/delta/microdiff/wrapper';
 
 // 共通ユーティリティのエクスポート
 export {
@@ -43,7 +43,6 @@ export {
 export { DeltaCalculationError } from '@/types';
 export type {
   ChangeKey,
-  DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,

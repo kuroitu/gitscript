@@ -85,24 +85,6 @@ export interface ObjectDelta {
 }
 
 /**
- * 差分計算のオプション
- */
-export interface DeltaCalculationOptions {
-  /** 深い比較を行うかどうか（デフォルト: true） */
-  deep?: boolean;
-  /** 配列の順序を考慮するかどうか（デフォルト: true） */
-  arrayOrderMatters?: boolean;
-  /** 無視するプロパティ名の配列 */
-  ignoreProperties?: string[];
-  /** カスタム比較関数 */
-  customComparator?: (
-    key: string,
-    oldValue: unknown,
-    newValue: unknown,
-  ) => boolean;
-}
-
-/**
  * 差分適用のオプション
  */
 export interface DeltaApplicationOptions {

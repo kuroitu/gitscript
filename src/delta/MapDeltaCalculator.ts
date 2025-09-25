@@ -11,11 +11,11 @@ import {
   createDeltaFromChanges,
   handleDeltaCalculationError,
 } from '@/delta/DeltaUtils';
-import { calculateDiff, MicrodiffResult } from '@/delta/MicrodiffWrapper';
+import { calculateDiff } from '@/delta/microdiff/wrapper';
+import { MicrodiffOptions, MicrodiffResult } from '@/delta/microdiff/types';
 import {
   ChangeKey,
   ChangeSpecialKey,
-  DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
@@ -33,7 +33,7 @@ import {
 export function calculateMapDelta(
   oldMap: Map<unknown, unknown>,
   newMap: Map<unknown, unknown>,
-  options: DeltaCalculationOptions = {},
+  options: MicrodiffOptions = {},
 ): DeltaCalculationResult {
   const startTime = performance.now();
 
@@ -42,12 +42,15 @@ export function calculateMapDelta(
     const oldObj = mapToObject(oldMap);
     const newObj = mapToObject(newMap);
 
-    // microdiffで差分を計算
-    const microdiffResult: MicrodiffResult = calculateDiff(oldObj, newObj, {
+    // microdiffのデフォルトオプションを設定
+    const microdiffOptions: MicrodiffOptions = {
       cyclesFix: true,
       ignoreArrays: true,
-      ignoreKeys: options.ignoreProperties,
-    });
+      ...options,
+    };
+
+    // microdiffで差分を計算
+    const microdiffResult: MicrodiffResult = calculateDiff(oldObj, newObj, microdiffOptions);
 
     // ObjectDelta形式に変換
     const delta = convertMapDiffToObjectDelta(microdiffResult, oldMap, newMap);

@@ -12,7 +12,7 @@ import {
   isValidChange,
   pathToString,
   type MicrodiffChange,
-} from '@/delta/MicrodiffWrapper';
+} from '@/delta/microdiff/wrapper';
 import { describe, expect, it } from 'vitest';
 
 describe('MicrodiffWrapper', () => {

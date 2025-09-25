@@ -13,7 +13,6 @@ import {
 import {
   ChangeKey,
   ChangeSpecialKey,
-  DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
@@ -25,13 +24,11 @@ import {
  *
  * @param oldValue 変更前の値
  * @param newValue 変更後の値
- * @param _options 計算オプション
  * @returns 差分計算の結果
  */
 export function calculatePrimitiveDelta(
   oldValue: unknown,
   newValue: unknown,
-  _options: DeltaCalculationOptions = {},
 ): DeltaCalculationResult {
   const startTime = performance.now();
 

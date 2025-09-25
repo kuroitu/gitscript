@@ -14,15 +14,11 @@ import {
   createDeltaFromChanges,
   handleDeltaCalculationError,
 } from '@/delta/DeltaUtils';
-import {
-  calculateDiff,
-  MicrodiffOptions,
-  MicrodiffResult,
-} from '@/delta/MicrodiffWrapper';
+import { calculateDiff } from '@/delta/microdiff/wrapper';
+import { MicrodiffOptions, MicrodiffResult } from '@/delta/microdiff/types';
 import {
   ChangeKey,
   ChangeSpecialKey,
-  DeltaCalculationOptions,
   DeltaCalculationResult,
   ObjectDelta,
   PropertyChange,
@@ -40,7 +36,7 @@ import {
 export function calculateObjectDelta(
   oldObject: Record<string, unknown>,
   newObject: Record<string, unknown>,
-  options: DeltaCalculationOptions = {},
+  options: MicrodiffOptions = {},
 ): DeltaCalculationResult {
   const startTime = performance.now();
 
@@ -50,11 +46,10 @@ export function calculateObjectDelta(
       return calculatePrimitiveDelta(oldObject, newObject, startTime);
     }
 
-    // microdiffのオプションを設定
+    // microdiffのデフォルトオプションを設定
     const microdiffOptions: MicrodiffOptions = {
       cyclesFix: true,
-      ignoreArrays: !options.arrayOrderMatters,
-      ignoreKeys: options.ignoreProperties,
+      ...options,
     };
 
     // microdiffで差分を計算
