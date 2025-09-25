@@ -5,7 +5,6 @@
 import {
   deepCopy,
   deserialize,
-  detectDataType,
   SerializationError,
   stringifyCompact,
 } from '@/core/serialization';
@@ -17,7 +16,6 @@ describe('Serialization Module Integration (Minimal)', () => {
       expect(typeof stringifyCompact).toBe('function');
       expect(typeof deserialize).toBe('function');
       expect(typeof deepCopy).toBe('function');
-      expect(typeof detectDataType).toBe('function');
     });
   });
 
@@ -287,21 +285,4 @@ describe('Serialization Module Integration (Minimal)', () => {
     });
   });
 
-  describe('Type detection integration', () => {
-    it('should detect types correctly', () => {
-      const obj = { a: 1, b: 2 };
-      const typeInfo = detectDataType(obj);
-
-      expect(typeInfo.type).toBe('object');
-      expect(typeInfo.details?.propertyCount).toBe(2);
-    });
-
-    it('should detect array types correctly', () => {
-      const arr = [1, 2, 3];
-      const typeInfo = detectDataType(arr);
-
-      expect(typeInfo.type).toBe('array');
-      expect(typeInfo.details?.elementCount).toBe(3);
-    });
-  });
 });

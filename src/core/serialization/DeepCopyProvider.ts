@@ -5,7 +5,6 @@
  * 循環参照を適切に処理する
  */
 
-import { detectDataType } from '@/core/serialization/detector';
 import { SerializationError } from '@/core/serialization/errors';
 import { DeepCopyResult } from '@/core/serialization/types';
 import { isNativeError } from '@/core/utils';
@@ -17,17 +16,12 @@ import { cloneDeep } from 'lodash';
  * @returns 深いコピーの結果
  */
 export function deepCopy<T = unknown>(obj: T): DeepCopyResult<T> {
-  const startTime = performance.now();
-
   try {
     // 純粋なオブジェクトの場合は直接lodashのcloneDeepを使用
     const copied = cloneDeep(obj);
-    const duration = performance.now() - startTime;
 
     return {
       data: copied as T,
-      typeInfo: detectDataType(copied),
-      duration,
     };
   } catch (error) {
     throw new SerializationError(

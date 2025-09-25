@@ -41,4 +41,3 @@ export function deserialize(data: string): unknown {
     );
   }
 }
-
