@@ -1,4 +1,4 @@
-import { GitScriptError } from '@/types/errors/base';
+import { GitScriptError } from '@/types';
 
 /**
  * 差分計算エラー
