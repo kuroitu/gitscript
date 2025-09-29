@@ -138,7 +138,9 @@ describe('GitScript Main Entry Point', () => {
 
     it('should work with patch functions', () => {
       const source = { user: { name: 'Alice', age: 30 } };
-      const patch = GitScript.createPatch(source, { user: { name: 'Bob', age: 31 } });
+      const patch = GitScript.createPatch(source, {
+        user: { name: 'Bob', age: 31 },
+      });
       expect(patch).toBeDefined();
 
       const applyPatch = GitScript.useApplyPatch();
@@ -148,7 +150,7 @@ describe('GitScript Main Entry Point', () => {
 
     it('should work with nested value access', () => {
       const obj = { user: { name: 'Alice', age: 30 } };
-      
+
       const name = GitScript.getNestedValue(obj, ['user', 'name']);
       expect(name).toBe('Alice');
 
@@ -232,7 +234,6 @@ describe('GitScript Main Entry Point', () => {
       const applyPatch = GitScript.useApplyPatch();
       const patched = applyPatch.applyPatch(data, patch);
       expect(patched).toEqual(modifiedData);
-
     });
   });
 });

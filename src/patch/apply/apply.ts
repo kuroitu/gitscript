@@ -86,5 +86,28 @@ export const useApplyPatch = () => {
 
   return {
     applyPatch,
+    handleRemoveOperation,
   };
 };
+
+/**
+ * 削除操作を処理
+ * @param source 対象オブジェクト
+ * @param path 削除するパス
+ * @param arrayDeletionManager 配列削除マネージャー
+ */
+export function handleRemoveOperation(
+  source: MicrodiffSource,
+  path: MicrodiffPath,
+  arrayDeletionManager: ReturnType<typeof useArrayDeletion>,
+): void {
+  const targetValue = getNestedValue(source, path);
+
+  if (isArray(targetValue)) {
+    // 配列の場合は特別な処理
+    arrayDeletionManager.scheduleArrayDeletion(source, path);
+  } else {
+    // 通常のオブジェクトの場合は直接削除
+    deleteNestedValue(source, path);
+  }
+}

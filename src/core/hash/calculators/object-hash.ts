@@ -1,7 +1,3 @@
-import {
-  calculateHashFromString,
-  calculateHashFromStrings,
-} from './string-hash';
 import { stringifyCompact } from '@/core/serialization';
 import {
   isNull,
@@ -9,6 +5,10 @@ import {
   validateArray,
   validateObject,
 } from '@/core/utils';
+import {
+  calculateHashFromString,
+  calculateHashFromStrings,
+} from './string-hash';
 
 /**
  * オブジェクトからSHA-1ハッシュを計算する
