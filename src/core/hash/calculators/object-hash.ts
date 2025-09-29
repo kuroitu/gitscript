@@ -1,7 +1,7 @@
 import {
   calculateHashFromString,
   calculateHashFromStrings,
-} from '@/core/hash/calculate/string-hash';
+} from './string-hash';
 import { stringifyCompact } from '@/core/serialization';
 import {
   isNull,

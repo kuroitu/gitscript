@@ -1,7 +1,7 @@
 import {
   calculateHashFromObject,
   calculateHashFromString,
-} from '@/core/hash/calculate';
+} from '@/core/hash/calculators';
 import { isValidHash } from '@/core/hash/validate/is-valid';
 import { isObject } from '@/core/utils';
 
