@@ -1,6 +1,8 @@
 import { SerializationError } from '@/core/serialization/errors';
 import { isNativeError } from '@/core/utils';
 
+export { SerializationError };
+
 /**
  * オブジェクトをコンパクトなJSON文字列にシリアライズする
  * @param obj シリアライズするオブジェクト

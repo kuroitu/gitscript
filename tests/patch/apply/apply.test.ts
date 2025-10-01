@@ -16,7 +16,7 @@ describe('Patch Apply', () => {
     });
 
     it('should apply patch to object', () => {
-      const source = { user: { name: 'Alice', age: 30 } };
+      const source: any = { user: { name: 'Alice', age: 30 } };
       const patch = {
         diff: [
           {
@@ -33,7 +33,7 @@ describe('Patch Apply', () => {
     });
 
     it('should handle create operations', () => {
-      const source = { user: { name: 'Alice' } };
+      const source: any = { user: { name: 'Alice' } };
       const patch = {
         diff: [
           {
@@ -50,7 +50,7 @@ describe('Patch Apply', () => {
     });
 
     it('should handle remove operations', () => {
-      const source = { user: { name: 'Alice', age: 30 } };
+      const source: any = { user: { name: 'Alice', age: 30 } };
       const patch = {
         diff: [
           {
@@ -67,7 +67,7 @@ describe('Patch Apply', () => {
     });
 
     it('should handle array operations', () => {
-      const source = { items: [1, 2, 3] };
+      const source: any = { items: [1, 2, 3] };
       const patch = {
         diff: [
           {

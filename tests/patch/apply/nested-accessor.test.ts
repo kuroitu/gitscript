@@ -42,7 +42,7 @@ describe('Nested Accessor', () => {
 
   describe('setNestedValue', () => {
     it('should set nested object values', () => {
-      const obj = { user: { name: 'Alice' } };
+      const obj: any = { user: { name: 'Alice' } };
 
       setNestedValue(obj, ['user', 'age'], 30);
       expect(obj.user.age).toBe(30);
@@ -52,7 +52,7 @@ describe('Nested Accessor', () => {
     });
 
     it('should set nested array values', () => {
-      const obj = { items: [1, 2, 3] };
+      const obj: any = { items: [1, 2, 3] };
 
       setNestedValue(obj, ['items', 1], 99);
       expect(obj.items[1]).toBe(99);
