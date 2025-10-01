@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 describe('Patch Convert', () => {
   describe('convertPatchToMicrodiffResult', () => {
     it('should convert patch to microdiff result', () => {
-      const patch = {
+      const patch: any = {
         diff: [
           {
             type: MicrodiffChangeType.Change,
@@ -34,13 +34,13 @@ describe('Patch Convert', () => {
     });
 
     it('should handle empty patch', () => {
-      const patch = { diff: [] };
+      const patch: any = { diff: [] };
       const result = convertPatchToMicrodiffResult(patch);
       expect(result).toEqual([]);
     });
 
     it('should preserve microdiff change structure', () => {
-      const patch = {
+      const patch: any = {
         diff: [
           {
             type: MicrodiffChangeType.Remove,
@@ -61,7 +61,7 @@ describe('Patch Convert', () => {
 
   describe('convertMicrodiffResultToPatch', () => {
     it('should convert microdiff result to patch', () => {
-      const microdiffResult = [
+      const microdiffResult: any = [
         {
           type: MicrodiffChangeType.Change,
           path: ['user', 'name'],

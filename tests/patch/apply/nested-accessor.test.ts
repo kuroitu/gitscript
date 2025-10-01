@@ -59,14 +59,14 @@ describe('Nested Accessor', () => {
     });
 
     it('should create nested objects if they do not exist', () => {
-      const obj = {};
+      const obj: any = {};
 
       setNestedValue(obj, ['user', 'name'], 'Alice');
       expect(obj.user.name).toBe('Alice');
     });
 
     it('should handle empty path', () => {
-      const obj = { user: { name: 'Alice' } };
+      const obj: any = { user: { name: 'Alice' } };
 
       setNestedValue(obj, [], { new: 'value' });
       // 空のパスの場合は何もしない
@@ -76,7 +76,7 @@ describe('Nested Accessor', () => {
 
   describe('deleteNestedValue', () => {
     it('should delete nested object values', () => {
-      const obj = { user: { name: 'Alice', age: 30 } };
+      const obj: any = { user: { name: 'Alice', age: 30 } };
 
       deleteNestedValue(obj, ['user', 'age']);
       expect(obj.user.age).toBeUndefined();
@@ -84,14 +84,14 @@ describe('Nested Accessor', () => {
     });
 
     it('should delete nested array values', () => {
-      const obj = { items: [1, 2, 3] };
+      const obj: any = { items: [1, 2, 3] };
 
       deleteNestedValue(obj, ['items', 1]);
       expect(obj.items[1]).toBeUndefined();
     });
 
     it('should handle non-existent paths gracefully', () => {
-      const obj = { user: { name: 'Alice' } };
+      const obj: any = { user: { name: 'Alice' } };
 
       expect(() => {
         deleteNestedValue(obj, ['user', 'nonexistent']);
@@ -103,7 +103,7 @@ describe('Nested Accessor', () => {
     });
 
     it('should handle empty path', () => {
-      const obj = { user: { name: 'Alice' } };
+      const obj: any = { user: { name: 'Alice' } };
 
       deleteNestedValue(obj, []);
       // 空のパスの場合は何もしない
@@ -113,7 +113,7 @@ describe('Nested Accessor', () => {
 
   describe('integration', () => {
     it('should work with complex nested structures', () => {
-      const obj = {
+      const obj: any = {
         users: [
           { id: 1, profile: { name: 'Alice', settings: { theme: 'dark' } } },
           { id: 2, profile: { name: 'Bob', settings: { theme: 'light' } } },
