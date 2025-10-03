@@ -84,7 +84,7 @@ describe('Patch Apply', () => {
       const result = applyPatch.applyPatch(source, patch);
       // 配列削除は遅延実行されるため、削除マーカーが残る
       expect(result).toHaveProperty('items');
-      expect(Array.isArray(result)).toBe(true);
+      expect(Array.isArray(result.items)).toBe(true);
     });
   });
 

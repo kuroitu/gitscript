@@ -24,9 +24,11 @@ describe('Patch Create', () => {
 
       const patch = createPatch(oldSource, newSource);
       expect(patch.diff.length).toBeGreaterThan(0);
-      
+
       // 新しいプロパティの追加を確認
-      const createChanges = patch.diff.filter(change => change.type === MicrodiffChangeType.Create);
+      const createChanges = patch.diff.filter(
+        (change) => change.type === MicrodiffChangeType.Create,
+      );
       expect(createChanges.length).toBeGreaterThan(0);
     });
 
@@ -36,9 +38,11 @@ describe('Patch Create', () => {
 
       const patch = createPatch(oldSource, newSource);
       expect(patch.diff.length).toBeGreaterThan(0);
-      
+
       // プロパティの削除を確認
-      const removeChanges = patch.diff.filter(change => change.type === MicrodiffChangeType.Remove);
+      const removeChanges = patch.diff.filter(
+        (change) => change.type === MicrodiffChangeType.Remove,
+      );
       expect(removeChanges.length).toBeGreaterThan(0);
     });
 
@@ -48,9 +52,11 @@ describe('Patch Create', () => {
 
       const patch = createPatch(oldSource, newSource);
       expect(patch.diff.length).toBeGreaterThan(0);
-      
+
       // プロパティの変更を確認
-      const changeChanges = patch.diff.filter(change => change.type === MicrodiffChangeType.Change);
+      const changeChanges = patch.diff.filter(
+        (change) => change.type === MicrodiffChangeType.Change,
+      );
       expect(changeChanges.length).toBeGreaterThan(0);
     });
 
@@ -141,7 +147,10 @@ describe('Patch Create', () => {
       const newSource = {
         data: {
           users: [
-            { id: 1, profile: { name: 'Alice Updated', tags: ['admin', 'moderator'] } },
+            {
+              id: 1,
+              profile: { name: 'Alice Updated', tags: ['admin', 'moderator'] },
+            },
             { id: 3, profile: { name: 'Charlie', tags: ['user'] } },
           ],
           metadata: { version: 2, lastUpdated: '2023-01-02' },

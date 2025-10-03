@@ -19,7 +19,12 @@ describe('Nested Accessor', () => {
     });
 
     it('should get nested array values', () => {
-      const obj = { items: [{ id: 1, name: 'item1' }, { id: 2, name: 'item2' }] };
+      const obj = {
+        items: [
+          { id: 1, name: 'item1' },
+          { id: 2, name: 'item2' },
+        ],
+      };
 
       expect(getNestedValue(obj, ['items', 0, 'name'])).toBe('item1');
       expect(getNestedValue(obj, ['items', 1, 'id'])).toBe(2);
@@ -121,8 +126,12 @@ describe('Nested Accessor', () => {
       };
 
       // 値の取得
-      expect(getNestedValue(obj, ['users', 0, 'profile', 'name'])).toBe('Alice');
-      expect(getNestedValue(obj, ['users', 1, 'profile', 'settings', 'theme'])).toBe('light');
+      expect(getNestedValue(obj, ['users', 0, 'profile', 'name'])).toBe(
+        'Alice',
+      );
+      expect(
+        getNestedValue(obj, ['users', 1, 'profile', 'settings', 'theme']),
+      ).toBe('light');
 
       // 値の設定
       setNestedValue(obj, ['users', 0, 'profile', 'name'], 'Alice Updated');

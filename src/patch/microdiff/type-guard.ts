@@ -22,9 +22,11 @@ export function isMicrodiffOptions(value: unknown): value is MicrodiffOptions {
   if (!isObject(value)) {
     return false;
   }
-  
+
   const options = value as MicrodiffOptions;
-  return options.cyclesFix === undefined || typeof options.cyclesFix === 'boolean';
+  return (
+    options.cyclesFix === undefined || typeof options.cyclesFix === 'boolean'
+  );
 }
 
 /**

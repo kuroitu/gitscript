@@ -55,7 +55,13 @@ describe('Array Deletion', () => {
       };
 
       // ネストした配列の要素を削除予約
-      arrayDeletion.scheduleArrayDeletion(source, ['data', 'items', 0, 'tags', 1]);
+      arrayDeletion.scheduleArrayDeletion(source, [
+        'data',
+        'items',
+        0,
+        'tags',
+        1,
+      ]);
 
       // 削除を実行
       arrayDeletion.executeAllDeletions();
@@ -133,6 +139,5 @@ describe('Array Deletion', () => {
         arrayDeletion.executeAllDeletions();
       }).not.toThrow();
     });
-
   });
 });

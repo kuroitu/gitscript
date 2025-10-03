@@ -60,7 +60,9 @@ describe('Serialization Module Integration (Minimal)', () => {
         deserialize('{invalid}');
       } catch (error) {
         expect(error).toBeInstanceOf(SerializationError);
-        expect((error as SerializationError).message).toContain('Failed to deserialize');
+        expect((error as SerializationError).message).toContain(
+          'Failed to deserialize',
+        );
       }
     });
 
@@ -284,5 +286,4 @@ describe('Serialization Module Integration (Minimal)', () => {
       expect(deserialized).toEqual(original);
     });
   });
-
 });
