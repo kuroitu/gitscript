@@ -26,7 +26,12 @@ export const useApplyPatch = () => {
    * @param patch パッチ
    * @returns 適用後のオブジェクト
    */
-  function applyPatch(source: MicrodiffSource, patch: Patch): MicrodiffSource {
+  function applyPatch<T extends Record<string, unknown>>(
+    source: T,
+    patch: Patch,
+  ): T;
+  function applyPatch<T extends unknown[]>(source: T, patch: Patch): T;
+  function applyPatch<T extends MicrodiffSource>(source: T, patch: Patch): T {
     const microdiffResult = convertPatchToMicrodiffResult(patch);
     return applyMicrodiffResult(source, microdiffResult);
   }
@@ -37,10 +42,10 @@ export const useApplyPatch = () => {
    * @param diffs microdiffの結果
    * @returns 適用後のオブジェクト
    */
-  function applyMicrodiffResult(
-    source: MicrodiffSource,
+  function applyMicrodiffResult<T extends MicrodiffSource>(
+    source: T,
     diffs: MicrodiffResult,
-  ): MicrodiffSource {
+  ): T {
     const newSource = deepCopy(source).data;
 
     for (const diff of diffs) {

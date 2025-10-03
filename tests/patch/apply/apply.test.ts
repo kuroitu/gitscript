@@ -16,7 +16,9 @@ describe('Patch Apply', () => {
     });
 
     it('should apply patch to object', () => {
-      const source: any = { user: { name: 'Alice', age: 30 } };
+      const source: { user: { name: string; age: number } } = {
+        user: { name: 'Alice', age: 30 },
+      };
       const patch = {
         diff: [
           {
@@ -34,7 +36,9 @@ describe('Patch Apply', () => {
     });
 
     it('should handle create operations', () => {
-      const source: any = { user: { name: 'Alice' } };
+      const source: { user: { name: string; age?: number } } = {
+        user: { name: 'Alice' },
+      };
       const patch = {
         diff: [
           {
@@ -47,11 +51,13 @@ describe('Patch Apply', () => {
 
       const applyPatch = useApplyPatch();
       const result = applyPatch.applyPatch(source, patch);
-      expect(result).toHaveProperty('user.age', 30);
+      expect(result.user.age).toBe(30);
     });
 
     it('should handle remove operations', () => {
-      const source: any = { user: { name: 'Alice', age: 30 } };
+      const source: { user: { name: string; age: number } } = {
+        user: { name: 'Alice', age: 30 },
+      };
       const patch = {
         diff: [
           {
@@ -69,7 +75,7 @@ describe('Patch Apply', () => {
     });
 
     it('should handle array operations', () => {
-      const source: any = { items: [1, 2, 3] };
+      const source: { items: number[] } = { items: [1, 2, 3] };
       const patch = {
         diff: [
           {
