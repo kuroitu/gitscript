@@ -4,7 +4,7 @@
  * テストデータとヘルパー関数を提供
  */
 
-import { CryptoError } from '@/core/crypto/CryptoProvider';
+import { CryptoError } from '@/core/crypto/errors';
 import { expect, it } from 'vitest';
 
 // テスト用の文字列データ

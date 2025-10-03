@@ -17,7 +17,7 @@ import {
   isString,
   isSymbol,
   isUndefined,
-} from '@/core/utils/typeGuards';
+} from '@/core/utils/type-guards';
 import {
   TEST_VALUES,
   TYPE_GUARD_TEST_CASES,
