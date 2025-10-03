@@ -95,11 +95,12 @@ describe('Patch Convert', () => {
           type: MicrodiffChangeType.Change,
           path: ['existing', 'field'],
           value: 'changed value',
+          oldValue: 'original value',
         },
         {
           type: MicrodiffChangeType.Remove,
           path: ['removed', 'field'],
-          value: undefined,
+          oldValue: 'removedValue',
         },
       ];
 
@@ -116,6 +117,7 @@ describe('Patch Convert', () => {
             type: MicrodiffChangeType.Change,
             path: ['user', 'profile', 'name'],
             value: 'Alice Updated',
+            oldValue: 'Alice',
           },
           {
             type: MicrodiffChangeType.Create,
@@ -125,7 +127,7 @@ describe('Patch Convert', () => {
           {
             type: MicrodiffChangeType.Remove,
             path: ['user', 'profile', 'oldField'],
-            value: undefined,
+            oldValue: 'oldValue',
           },
         ],
       };
@@ -144,6 +146,7 @@ describe('Patch Convert', () => {
             type: MicrodiffChangeType.Change,
             path: ['data', 'items', 0, 'metadata', 'tags', 1],
             value: 'updated tag',
+            oldValue: 'original tag',
           },
         ],
       };
