@@ -92,13 +92,7 @@ describe('GitScript Main Entry Point', () => {
     });
 
     it('should export validation functions', () => {
-      expect(GitScript.validateString).toBeDefined();
-      expect(GitScript.validateArray).toBeDefined();
-      expect(GitScript.validateBuffer).toBeDefined();
       expect(GitScript.validateRange).toBeDefined();
-      expect(typeof GitScript.validateString).toBe('function');
-      expect(typeof GitScript.validateArray).toBe('function');
-      expect(typeof GitScript.validateBuffer).toBe('function');
       expect(typeof GitScript.validateRange).toBe('function');
     });
 
@@ -192,9 +186,6 @@ describe('GitScript Main Entry Point', () => {
     });
 
     it('should work with validation functions', () => {
-      expect(() => GitScript.validateString('test')).not.toThrow();
-      expect(() => GitScript.validateArray([1, 2, 3])).not.toThrow();
-      expect(() => GitScript.validateBuffer(Buffer.from('test'))).not.toThrow();
       expect(() => GitScript.validateRange(5, 0, 10)).not.toThrow();
     });
 

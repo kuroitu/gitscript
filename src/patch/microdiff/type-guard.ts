@@ -1,4 +1,11 @@
-import { isArray, isNumber, isObject, isString } from '@/core';
+import {
+  isArray,
+  isBoolean,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+} from '@/core';
 import {
   MicrodiffChange,
   MicrodiffChangeType,
@@ -6,7 +13,7 @@ import {
   MicrodiffPath,
   MicrodiffResult,
   MicrodiffSource,
-} from '@/patch/microdiff';
+} from '@/patch/microdiff/types';
 import {
   DifferenceChange,
   DifferenceCreate,
@@ -25,7 +32,8 @@ export function isMicrodiffOptions(value: unknown): value is MicrodiffOptions {
 
   const options = value as MicrodiffOptions;
   return (
-    options.cyclesFix === undefined || typeof options.cyclesFix === 'boolean'
+    !!options &&
+    (isUndefined(options.cyclesFix) || isBoolean(options.cyclesFix))
   );
 }
 
@@ -37,9 +45,7 @@ export function isMicrodiffOptions(value: unknown): value is MicrodiffOptions {
 export function isMicrodiffChangeType(
   value: unknown,
 ): value is MicrodiffChangeType {
-  return Object.values(MicrodiffChangeType).includes(
-    value as MicrodiffChangeType,
-  );
+  return Object.values(MicrodiffChangeType).some((type) => type === value);
 }
 
 /**
@@ -93,7 +99,7 @@ function isDifferenceCreate(value: unknown): value is DifferenceCreate {
     !!create &&
     create.type === MicrodiffChangeType.Create &&
     isMicrodiffPath(create.path) &&
-    Object.hasOwn(create, 'value')
+    !isUndefined(create.value)
   );
 }
 
@@ -108,7 +114,7 @@ function isDifferenceRemove(value: unknown): value is DifferenceRemove {
     !!remove &&
     remove.type === MicrodiffChangeType.Remove &&
     isMicrodiffPath(remove.path) &&
-    Object.hasOwn(remove, 'oldValue')
+    !isUndefined(remove.oldValue)
   );
 }
 
@@ -123,7 +129,7 @@ function isDifferenceChange(value: unknown): value is DifferenceChange {
     !!change &&
     change.type === MicrodiffChangeType.Change &&
     isMicrodiffPath(change.path) &&
-    Object.hasOwn(change, 'value') &&
-    Object.hasOwn(change, 'oldValue')
+    !isUndefined(change.value) &&
+    !isUndefined(change.oldValue)
   );
 }

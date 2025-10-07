@@ -1,5 +1,4 @@
 import { calculateSha1, calculateSha1FromMultiple } from '@/core/crypto';
-import { validateArray, validateBuffer } from '@/core/utils';
 
 /**
  * バッファからSHA-1ハッシュを計算する
@@ -7,7 +6,6 @@ import { validateArray, validateBuffer } from '@/core/utils';
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHashFromBuffer(buffer: Buffer): string {
-  validateBuffer(buffer, 'buffer');
   return calculateSha1(buffer);
 }
 
@@ -17,6 +15,5 @@ export function calculateHashFromBuffer(buffer: Buffer): string {
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHashFromBuffers(buffers: Buffer[]): string {
-  validateArray<Buffer>(buffers, 'buffers');
   return calculateSha1FromMultiple(buffers);
 }

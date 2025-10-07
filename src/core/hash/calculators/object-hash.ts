@@ -1,14 +1,9 @@
-import { stringifyCompact } from '@/core/serialization';
-import {
-  isNull,
-  isUndefined,
-  validateArray,
-  validateObject,
-} from '@/core/utils';
 import {
   calculateHashFromString,
   calculateHashFromStrings,
-} from './string-hash';
+} from '@/core/hash/calculators/string-hash';
+import { stringifyCompact } from '@/core/serialization';
+import { isNull, isUndefined } from '@/core/utils';
 
 /**
  * オブジェクトからSHA-1ハッシュを計算する
@@ -16,7 +11,6 @@ import {
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHashFromObject(obj: object): string {
-  validateObject(obj, 'obj');
   const content = convertObjectsToStrings([obj]);
   return calculateHashFromString(content[0]);
 }
@@ -27,7 +21,6 @@ export function calculateHashFromObject(obj: object): string {
  * @returns SHA-1ハッシュ（40文字の16進数文字列）
  */
 export function calculateHashFromObjects(objects: object[]): string {
-  validateArray<object>(objects, 'objects');
   const content = convertObjectsToStrings(objects);
   return calculateHashFromStrings(content);
 }
