@@ -174,7 +174,9 @@ describe('JSON Provider', () => {
         );
         // 文字列エラーの場合、Errorオブジェクトが作成されてcauseに設定される
         expect((error as SerializationError).cause).toBeInstanceOf(Error);
-        expect((error as SerializationError).cause?.message).toBe('String error');
+        expect((error as SerializationError).cause?.message).toBe(
+          'String error',
+        );
       } finally {
         JSON.stringify = originalStringify;
       }
@@ -196,7 +198,9 @@ describe('JSON Provider', () => {
         );
         // 文字列エラーの場合、Errorオブジェクトが作成されてcauseに設定される
         expect((error as SerializationError).cause).toBeInstanceOf(Error);
-        expect((error as SerializationError).cause?.message).toBe('String error');
+        expect((error as SerializationError).cause?.message).toBe(
+          'String error',
+        );
       } finally {
         JSON.parse = originalParse;
       }
