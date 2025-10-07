@@ -172,7 +172,9 @@ describe('JSON Provider', () => {
         expect((error as SerializationError).message).toContain(
           'Failed to stringify object',
         );
-        expect((error as SerializationError).cause).toBeUndefined();
+        // 文字列エラーの場合、Errorオブジェクトが作成されてcauseに設定される
+        expect((error as SerializationError).cause).toBeInstanceOf(Error);
+        expect((error as SerializationError).cause?.message).toBe('String error');
       } finally {
         JSON.stringify = originalStringify;
       }
@@ -192,7 +194,9 @@ describe('JSON Provider', () => {
         expect((error as SerializationError).message).toContain(
           'Failed to deserialize',
         );
-        expect((error as SerializationError).cause).toBeUndefined();
+        // 文字列エラーの場合、Errorオブジェクトが作成されてcauseに設定される
+        expect((error as SerializationError).cause).toBeInstanceOf(Error);
+        expect((error as SerializationError).cause?.message).toBe('String error');
       } finally {
         JSON.parse = originalParse;
       }
