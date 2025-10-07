@@ -62,14 +62,14 @@ describe('Microdiff Wrapper', () => {
       const oldSource = { name: 'Alice' };
       const newSource = null;
 
-      expect(() => calculateDiff(oldSource, newSource)).toThrow();
+      expect(() => calculateDiff(oldSource, newSource as any)).toThrow();
     });
 
     it('should handle null to object changes', () => {
       const oldSource = null;
       const newSource = { name: 'Alice' };
 
-      expect(() => calculateDiff(oldSource, newSource)).toThrow();
+      expect(() => calculateDiff(oldSource as any, newSource)).toThrow();
     });
 
     it('should handle undefined values', () => {
@@ -105,7 +105,7 @@ describe('Microdiff Wrapper', () => {
     it('should throw DeltaCalculationError on microdiff failure', () => {
       // nullとの比較でmicrodiffを失敗させる
       expect(() => {
-        calculateDiff({ name: 'Alice' }, null);
+        calculateDiff({ name: 'Alice' }, null as any);
       }).toThrow(DeltaCalculationError);
     });
 
@@ -117,15 +117,11 @@ describe('Microdiff Wrapper', () => {
         calculateDiff(circularObj, { name: 'Bob' });
       } catch (error) {
         expect(error).toBeInstanceOf(DeltaCalculationError);
-        expect(error.message).toBe('Failed to calculate diff using microdiff');
-        expect(error.cause).toBeDefined();
+        expect((error as DeltaCalculationError).message).toBe(
+          'Failed to calculate diff using microdiff',
+        );
+        expect((error as DeltaCalculationError).cause).toBeDefined();
       }
-    });
-
-    it('should handle non-Error exceptions', () => {
-      // このテストは複雑なモックが必要なため、スキップ
-      // 実際のエラーハンドリングは他のテストで確認済み
-      expect(true).toBe(true);
     });
   });
 

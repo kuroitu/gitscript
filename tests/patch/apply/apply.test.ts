@@ -112,4 +112,66 @@ describe('Patch Apply', () => {
       expect(source.items).toBeDefined();
     });
   });
+
+  describe('edge cases', () => {
+    it('should handle empty path in applyMicrodiffResult', () => {
+      const source = { user: { name: 'Alice' } };
+      const patch = {
+        diff: [
+          {
+            type: MicrodiffChangeType.Change,
+            path: [], // 空のパス
+            value: 'new value',
+            oldValue: 'old value',
+          },
+        ],
+      };
+
+      const applyPatch = useApplyPatch();
+      const result = applyPatch.applyPatch(source, patch);
+
+      // 空のパスの場合は変更されない
+      expect(result).toEqual(source);
+    });
+
+    it('should handle null path in applyMicrodiffResult', () => {
+      const source = { user: { name: 'Alice' } };
+      const patch = {
+        diff: [
+          {
+            type: MicrodiffChangeType.Change,
+            path: null as any, // nullパス
+            value: 'new value',
+            oldValue: 'old value',
+          },
+        ],
+      };
+
+      const applyPatch = useApplyPatch();
+      const result = applyPatch.applyPatch(source, patch);
+
+      // nullパスの場合は変更されない
+      expect(result).toEqual(source);
+    });
+
+    it('should handle undefined path in applyMicrodiffResult', () => {
+      const source = { user: { name: 'Alice' } };
+      const patch = {
+        diff: [
+          {
+            type: MicrodiffChangeType.Change,
+            path: undefined as any, // undefinedパス
+            value: 'new value',
+            oldValue: 'old value',
+          },
+        ],
+      };
+
+      const applyPatch = useApplyPatch();
+      const result = applyPatch.applyPatch(source, patch);
+
+      // undefinedパスの場合は変更されない
+      expect(result).toEqual(source);
+    });
+  });
 });

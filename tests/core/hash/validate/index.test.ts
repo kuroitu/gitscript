@@ -51,7 +51,7 @@ describe('Hash Validate Module', () => {
       const obj = { test: 'value' };
       const hash = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3';
 
-      const result = HashValidate.verifyObjectHashIntegrity(obj, hash);
+      const result = HashValidate.verifyObjectHashIntegrity(hash, obj);
       expect(typeof result).toBe('boolean');
     });
   });

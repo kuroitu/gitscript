@@ -85,6 +85,21 @@ describe('Object Hash Calculator', () => {
       expect(hash.length).toBe(40);
     });
 
+    it('should handle null and undefined values in objects', () => {
+      // nullとundefinedを含むオブジェクトのテスト
+      const objWithNull = { name: 'Alice', value: null };
+      const objWithUndefined = { name: 'Bob', value: undefined };
+
+      const hash1 = calculateHashFromObject(objWithNull);
+      const hash2 = calculateHashFromObject(objWithUndefined);
+
+      expect(typeof hash1).toBe('string');
+      expect(typeof hash2).toBe('string');
+      expect(hash1.length).toBe(40);
+      expect(hash2.length).toBe(40);
+      expect(hash1).not.toBe(hash2); // 異なる値なので異なるハッシュになる
+    });
+
     it('should throw error for invalid input', () => {
       // TypeScriptの型チェックにより、nullは渡せないため、
       // 実際のエラーハンドリングは他のテストで確認済み

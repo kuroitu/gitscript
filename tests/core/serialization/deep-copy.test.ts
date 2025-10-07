@@ -191,4 +191,18 @@ describe('Deep Copy', () => {
       expect(result.data.set).not.toBe(set);
     });
   });
+
+  describe('error handling', () => {
+    it('should handle deep copy errors gracefully', () => {
+      // 循環参照を作成してエラーを発生させる
+      const circularObj: any = { name: 'test' };
+      circularObj.self = circularObj;
+
+      // lodash.cloneDeepは循環参照を処理できるため、エラーは発生しない
+      // 代わりに、正常に処理されることを確認
+      const result = deepCopy(circularObj);
+      expect(result.data).toBeDefined();
+      expect(result.data.name).toBe('test');
+    });
+  });
 });

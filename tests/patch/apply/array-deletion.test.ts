@@ -139,5 +139,41 @@ describe('Array Deletion', () => {
         arrayDeletion.executeAllDeletions();
       }).not.toThrow();
     });
+
+    it('should handle non-array parent in executeArrayDeletion', () => {
+      const arrayDeletion = useArrayDeletion();
+      const source = { items: 'not an array' };
+
+      // 配列でない親要素に対して削除をスケジュール
+      arrayDeletion.scheduleArrayDeletion(source, ['items', 0]);
+
+      // 実行してもエラーが発生しない
+      expect(() => {
+        arrayDeletion.executeAllDeletions();
+      }).not.toThrow();
+    });
+
+    it('should handle empty parent path in scheduleArrayDeletion', () => {
+      const arrayDeletion = useArrayDeletion();
+      const source = { items: [1, 2, 3] };
+
+      // 空の親パス
+      expect(() => {
+        arrayDeletion.scheduleArrayDeletion(source, [0]);
+      }).not.toThrow();
+    });
+
+    it('should handle non-number index in scheduleArrayDeletion', () => {
+      const arrayDeletion = useArrayDeletion();
+      const source = { items: [1, 2, 3] };
+
+      // 数値でないインデックス
+      expect(() => {
+        arrayDeletion.scheduleArrayDeletion(source, [
+          'items',
+          'invalid' as any,
+        ]);
+      }).not.toThrow();
+    });
   });
 });

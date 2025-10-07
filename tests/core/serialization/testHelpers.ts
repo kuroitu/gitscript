@@ -4,7 +4,7 @@
  * テストデータとヘルパー関数を提供
  */
 
-import { SerializationError } from '@/core/serialization/json-provider';
+import { SerializationError } from '@/core/serialization/errors';
 import { expect, it } from 'vitest';
 
 // テスト用のオブジェクトデータ
