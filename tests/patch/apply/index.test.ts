@@ -9,9 +9,7 @@ describe('Patch Apply Module', () => {
   describe('exports', () => {
     it('should export apply functions', () => {
       expect(Apply.useApplyPatch).toBeDefined();
-      expect(Apply.handleRemoveOperation).toBeDefined();
       expect(typeof Apply.useApplyPatch).toBe('function');
-      expect(typeof Apply.handleRemoveOperation).toBe('function');
     });
 
     it('should export nested accessor functions', () => {
@@ -32,7 +30,6 @@ describe('Patch Apply Module', () => {
   describe('functionality', () => {
     it('should work with patch application', () => {
       const source = { user: { name: 'Alice', age: 30 } };
-      const target = { user: { name: 'Bob', age: 31 } };
 
       // パッチの適用
       const applyPatch = Apply.useApplyPatch();

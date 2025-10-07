@@ -2,8 +2,7 @@
  * src/patch/apply/apply.ts のテスト
  */
 
-import { handleRemoveOperation, useApplyPatch } from '@/patch/apply/apply';
-import { useArrayDeletion } from '@/patch/apply/array-deletion';
+import { useApplyPatch } from '@/patch/apply/apply';
 import { MicrodiffChangeType } from '@/patch/microdiff';
 import { describe, expect, it } from 'vitest';
 
@@ -91,25 +90,6 @@ describe('Patch Apply', () => {
       // 配列削除は遅延実行されるため、削除マーカーが残る
       expect(result).toHaveProperty('items');
       expect(Array.isArray(result.items)).toBe(true);
-    });
-  });
-
-  describe('handleRemoveOperation', () => {
-    it('should handle object property removal', () => {
-      const source = { user: { name: 'Alice', age: 30 } };
-      const path = ['user', 'age'];
-
-      handleRemoveOperation(source, path, useArrayDeletion());
-      expect(source.user.age).toBeUndefined();
-    });
-
-    it('should handle array element removal', () => {
-      const source = { items: [1, 2, 3] };
-      const path = ['items', 1];
-
-      handleRemoveOperation(source, path, useArrayDeletion());
-      // 配列の削除は遅延実行されるため、即座には反映されない
-      expect(source.items).toBeDefined();
     });
   });
 

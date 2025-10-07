@@ -26,13 +26,10 @@ import {
  * @returns MicrodiffOptionsの場合true
  */
 export function isMicrodiffOptions(value: unknown): value is MicrodiffOptions {
-  if (!isObject(value)) {
-    return false;
-  }
-
   const options = value as MicrodiffOptions;
   return (
     !!options &&
+    isObject(options) &&
     (isUndefined(options.cyclesFix) || isBoolean(options.cyclesFix))
   );
 }

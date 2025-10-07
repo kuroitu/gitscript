@@ -13,7 +13,7 @@ export function stringifyCompact(obj: unknown): string {
   } catch (error) {
     throw new SerializationError(
       `Failed to stringify object: ${isNativeError(error) ? error.message : 'Unknown error'}`,
-      isNativeError(error) ? error : undefined,
+      isNativeError(error) ? error : new Error(String(error)),
     );
   }
 }
@@ -30,7 +30,7 @@ export function deserialize(data: string): unknown {
   } catch (error) {
     throw new SerializationError(
       `Failed to deserialize: ${isNativeError(error) ? error.message : 'Unknown error'}`,
-      isNativeError(error) ? error : undefined,
+      isNativeError(error) ? error : new Error(String(error)),
     );
   }
 }

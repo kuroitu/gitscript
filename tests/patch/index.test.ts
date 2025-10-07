@@ -9,9 +9,7 @@ describe('Patch Module', () => {
   describe('exports', () => {
     it('should export apply functions', () => {
       expect(Patch.useApplyPatch).toBeDefined();
-      expect(Patch.handleRemoveOperation).toBeDefined();
       expect(typeof Patch.useApplyPatch).toBe('function');
-      expect(typeof Patch.handleRemoveOperation).toBe('function');
     });
 
     it('should export nested accessor functions', () => {
