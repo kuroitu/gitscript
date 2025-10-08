@@ -25,7 +25,7 @@ export function calculateDiff(
   } catch (error) {
     throw new DeltaCalculationError(
       'Failed to calculate diff using microdiff',
-      isNativeError(error) ? error : undefined,
+      isNativeError(error) ? error : new Error(String(error)),
     );
   }
 }
