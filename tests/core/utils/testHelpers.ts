@@ -4,7 +4,7 @@
  * テストデータとヘルパー関数を提供
  */
 
-import { ArgumentError, TypeError } from '@/types/Errors';
+import { ArgumentError, TypeError } from '@/types/errors';
 import { expect, it } from 'vitest';
 
 // テスト用のデータ

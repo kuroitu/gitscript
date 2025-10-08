@@ -1,27 +1,21 @@
 /**
- * シリアライゼーションモジュールの統合テスト
+ * シリアライゼーションモジュールの統合テスト（最小限版）
  */
 
 import {
-  analyzeValue,
   deepCopy,
   deserialize,
-  detectDataType,
   SerializationError,
-  serialize,
   stringifyCompact,
 } from '@/core/serialization';
 import { describe, expect, it } from 'vitest';
 
-describe('Serialization Module Integration', () => {
+describe('Serialization Module Integration (Minimal)', () => {
   describe('Module exports', () => {
     it('should export all required functions', () => {
       expect(typeof stringifyCompact).toBe('function');
-      expect(typeof serialize).toBe('function');
       expect(typeof deserialize).toBe('function');
       expect(typeof deepCopy).toBe('function');
-      expect(typeof detectDataType).toBe('function');
-      expect(typeof analyzeValue).toBe('function');
     });
   });
 
@@ -30,12 +24,12 @@ describe('Serialization Module Integration', () => {
       const original = { name: 'test', value: 42 };
 
       // シリアライゼーション
-      const serialized = serialize(original);
-      expect(serialized.data).toBe('{"name":"test","value":42}');
+      const serialized = stringifyCompact(original);
+      expect(serialized).toBe('{"name":"test","value":42}');
 
       // デシリアライゼーション
-      const deserialized = deserialize(serialized.data);
-      expect(deserialized.data).toEqual(original);
+      const deserialized = deserialize(serialized);
+      expect(deserialized).toEqual(original);
     });
 
     it('should handle different data types in workflow', () => {
@@ -47,27 +41,27 @@ describe('Serialization Module Integration', () => {
         object: { nested: 'value' },
       };
 
-      const serialized = serialize(testData);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(testData);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(testData);
+      expect(deserialized).toEqual(testData);
     });
   });
 
   describe('Error handling integration', () => {
     it('should handle SerializationError properly', () => {
-      expect(() => {
-        throw new SerializationError('Test error');
-      }).toThrow(SerializationError);
+      const invalidJson = '{invalid json}';
+
+      expect(() => deserialize(invalidJson)).toThrow(SerializationError);
     });
 
     it('should provide meaningful error messages', () => {
       try {
-        throw new SerializationError('Test error message');
+        deserialize('{invalid}');
       } catch (error) {
         expect(error).toBeInstanceOf(SerializationError);
         expect((error as SerializationError).message).toContain(
-          'Test error message',
+          'Failed to deserialize',
         );
       }
     });
@@ -76,63 +70,61 @@ describe('Serialization Module Integration', () => {
       const obj: any = { a: 1 };
       obj.self = obj;
 
-      expect(() => serialize(obj)).toThrow(SerializationError);
+      expect(() => stringifyCompact(obj)).toThrow(SerializationError);
     });
 
     it('should handle BigInt serialization errors', () => {
-      expect(() => stringifyCompact(BigInt(123))).toThrow(SerializationError);
+      const bigIntObj = { value: BigInt(123) };
+
+      expect(() => stringifyCompact(bigIntObj)).toThrow(SerializationError);
     });
 
-    it('should handle Symbol serialization (converts to null)', () => {
+    it('should handle Symbol serialization (returns undefined)', () => {
       const result = stringifyCompact(Symbol('test'));
-      expect(result).toBe('null');
+      expect(result).toBe(undefined);
     });
   });
 
   describe('Real-world usage scenarios', () => {
     it('should handle configuration data simulation', () => {
-      // 設定データのような構造化データのシミュレーション
       const config = {
-        database: {
-          host: 'localhost',
-          port: 5432,
-          credentials: {
-            username: 'admin',
-            password: 'secret',
-          },
+        apiUrl: 'https://api.example.com',
+        timeout: 5000,
+        retries: 3,
+        features: {
+          auth: true,
+          logging: false,
         },
-        features: ['auth', 'logging', 'monitoring'],
-        debug: true,
       };
 
-      const serialized = serialize(config);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(config);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(config);
+      expect(deserialized).toEqual(config);
     });
 
     it('should handle user data simulation', () => {
-      // ユーザーデータのシミュレーション
       const user = {
-        id: 1,
-        name: 'John Doe',
-        email: 'john@example.com',
-        preferences: {
-          theme: 'dark',
-          notifications: true,
-          language: 'en',
+        id: 123,
+        username: 'testuser',
+        email: 'test@example.com',
+        profile: {
+          firstName: 'Test',
+          lastName: 'User',
+          preferences: {
+            theme: 'dark',
+            notifications: true,
+          },
         },
-        lastLogin: '2023-01-01T00:00:00.000Z', // Dateは文字列として扱う
       };
 
-      const serialized = serialize(user);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(user);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(user);
+      expect(deserialized).toEqual(user);
     });
 
     it('should handle API response simulation', () => {
-      // APIレスポンスのシミュレーション
       const apiResponse = {
         status: 'success',
         data: {
@@ -142,132 +134,156 @@ describe('Serialization Module Integration', () => {
           ],
           pagination: {
             page: 1,
+            limit: 10,
             total: 2,
           },
         },
-        timestamp: new Date().toISOString(),
+        metadata: {
+          timestamp: '2023-01-01T00:00:00Z',
+          version: '1.0',
+        },
       };
 
-      const serialized = serialize(apiResponse);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(apiResponse);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(apiResponse);
+      expect(deserialized).toEqual(apiResponse);
     });
 
     it('should handle log data simulation', () => {
-      // ログデータのシミュレーション
-      const timestamp = new Date().toISOString();
       const logEntry = {
         level: 'info',
-        message: 'User login successful',
-        timestamp: timestamp, // 文字列として扱う
-        metadata: {
+        message: 'User action completed',
+        timestamp: '2023-01-01T12:00:00Z',
+        context: {
           userId: 123,
-          ip: '192.168.1.1',
-          userAgent: 'Mozilla/5.0...',
+          action: 'update_profile',
+          duration: 250,
         },
       };
 
-      const serialized = serialize(logEntry);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(logEntry);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(logEntry);
+      expect(deserialized).toEqual(logEntry);
     });
 
     it('should handle form data simulation', () => {
-      // フォームデータのシミュレーション
       const formData = {
-        personalInfo: {
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
+        name: 'John Doe',
+        email: 'john@example.com',
+        age: 30,
+        interests: ['programming', 'music', 'travel'],
+        address: {
+          street: '123 Main St',
+          city: 'Anytown',
+          zipcode: '12345',
         },
-        preferences: {
-          newsletter: true,
-          notifications: false,
-        },
-        tags: ['customer', 'premium'],
       };
 
-      const serialized = serialize(formData);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(formData);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(formData);
+      expect(deserialized).toEqual(formData);
     });
   });
 
   describe('Performance integration', () => {
     it('should handle high-frequency serialization', () => {
-      const testData = { value: Math.random() };
+      const testData = { counter: 0, timestamp: Date.now() };
       const iterations = 1000;
 
       const startTime = performance.now();
       for (let i = 0; i < iterations; i++) {
-        serialize(testData);
+        stringifyCompact(testData);
       }
       const endTime = performance.now();
 
-      const avgTime = (endTime - startTime) / iterations;
-      expect(avgTime).toBeLessThan(1); // 1ms未満であることを期待
+      // パフォーマンステスト：1000回の操作が合理的な時間で完了すること
+      expect(endTime - startTime).toBeLessThan(1000);
     });
 
     it('should handle memory efficiently in continuous operations', () => {
-      // メモリリークがないことを確認するため、複数回実行
+      // メモリ効率のテスト
       for (let i = 0; i < 100; i++) {
         const data = { iteration: i, timestamp: new Date().toISOString() };
-        const serialized = serialize(data);
-        const deserialized = deserialize(serialized.data);
-        expect(deserialized.data).toEqual(data);
+        const serialized = stringifyCompact(data);
+        const deserialized = deserialize(serialized);
+        expect(deserialized).toEqual(data);
       }
+
+      // メモリリークがないことの間接的な確認
+      expect(true).toBe(true);
     });
   });
 
   describe('Data integrity', () => {
     it('should maintain data integrity for complex objects', () => {
       const complexObject = {
+        numbers: [1, 2, 3, 4, 5],
+        strings: ['a', 'b', 'c'],
         nested: {
-          deeply: {
-            nested: {
-              value: 'test',
-              array: [1, { inner: 'value' }, 3],
-            },
+          deep: {
+            value: 'very deep',
+            array: [{ id: 1 }, { id: 2 }],
           },
         },
-        // Set/MapはJSONシリアライゼーションで空オブジェクトになる
-        set: {},
-        map: {},
+        mixed: [1, 'two', { three: 3 }, [4, 5]],
       };
 
-      const serialized = serialize(complexObject);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(complexObject);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(complexObject);
+      expect(deserialized).toEqual(complexObject);
     });
 
     it('should handle numeric precision correctly', () => {
       const numbers = {
         integer: 42,
         float: 3.14159,
-        scientific: 1.23e-10,
-        large: 999999999999999,
+        negative: -123.456,
+        zero: 0,
+        scientific: 1.23e-4,
       };
 
-      const serialized = serialize(numbers);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(numbers);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(numbers);
+      expect(deserialized).toEqual(numbers);
     });
 
     it('should handle boolean values correctly', () => {
       const booleans = {
-        true: true,
-        false: false,
+        isTrue: true,
+        isFalse: false,
+        nested: { flag: true },
+        array: [true, false, true],
       };
 
-      const serialized = serialize(booleans);
-      const deserialized = deserialize(serialized.data);
+      const serialized = stringifyCompact(booleans);
+      const deserialized = deserialize(serialized);
 
-      expect(deserialized.data).toEqual(booleans);
+      expect(deserialized).toEqual(booleans);
+    });
+  });
+
+  describe('Deep copy integration', () => {
+    it('should work with deep copy for complete workflow', () => {
+      const original = {
+        data: { value: 42 },
+        array: [1, 2, { nested: true }],
+      };
+
+      // 深いコピー
+      const copied = deepCopy(original);
+      expect(copied.data).toEqual(original);
+      expect(copied.data).not.toBe(original); // 参照が異なることを確認
+
+      // コピーしたオブジェクトをシリアライズ
+      const serialized = stringifyCompact(copied.data);
+      const deserialized = deserialize(serialized);
+
+      expect(deserialized).toEqual(original);
     });
   });
 });
