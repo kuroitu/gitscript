@@ -153,5 +153,27 @@ describe('Patch Apply', () => {
       // undefinedパスの場合は変更されない
       expect(result).toEqual(source);
     });
+
+    it('should handle array deletion scheduling', () => {
+      const source = { items: [1, 2, 3, 4, 5] };
+      const patch = {
+        diff: [
+          {
+            type: MicrodiffChangeType.Remove,
+            path: ['items', 2], // インデックス2の要素を削除
+            oldValue: 3,
+          },
+        ],
+      };
+
+      const applyPatch = useApplyPatch();
+      const result = applyPatch.applyPatch(source, patch);
+
+      // 配列削除は遅延実行されるため、削除マーカーが残る
+      expect(result).toHaveProperty('items');
+      expect(Array.isArray(result.items)).toBe(true);
+      // 配列の長さは変わらない（削除マーカーが残る）
+      expect(result.items.length).toBe(5);
+    });
   });
 });
