@@ -123,7 +123,6 @@ describe('Microdiff Wrapper', () => {
         expect((error as DeltaCalculationError).cause).toBeDefined();
       }
     });
-
   });
 
   describe('result structure', () => {

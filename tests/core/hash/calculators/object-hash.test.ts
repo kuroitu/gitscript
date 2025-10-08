@@ -181,5 +181,4 @@ describe('Object Hash Calculator', () => {
       }).toThrow();
     });
   });
-
 });
